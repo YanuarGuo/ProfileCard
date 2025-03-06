@@ -17,9 +17,27 @@ namespace ProfileCard
         private Bitmap originalImage;
         private string loadedFilePath;
 
+        private readonly string encodedHex;
+
         public ProfileCard()
         {
             InitializeComponent();
+        }
+
+        public static List<byte[]> SplitDataForCard(byte[] encodedData, int blockSize = 16)
+        {
+            List<byte[]> splitData = new List<byte[]>();
+
+            for (int i = 0; i < encodedData.Length; i += blockSize)
+            {
+                int length = Math.Min(blockSize, encodedData.Length - i);
+                byte[] block = new byte[length];
+                Array.Copy(encodedData, i, block, 0, length);
+                splitData.Add(block);
+
+                Debug.WriteLine($"Split Block: {BitConverter.ToString(block)}");
+            }
+            return splitData;
         }
 
         private void UpdateLabelVisibility()
@@ -72,15 +90,22 @@ namespace ProfileCard
             string address = TxtAddress.Text.Trim();
             string phone = TxtNumber.Text.Trim();
 
-            byte[] compressedImage = CompressImage(ProfilePict.Image, 40, 60, 80);
-            string hexImage = ConvertToHexWithHeader("PIC", compressedImage);
+            byte[]? compressedImage = null;
+            if (ProfilePict.Image != null)
+            {
+                compressedImage = CompressImage(ProfilePict.Image, 40, 60, 80);
+            }
+            string hexImage =
+                compressedImage != null ? ConvertToHexWithHeader("PIC", compressedImage) : "PIC00";
             string hexName = ConvertToHexWithHeader("NME", name);
             string hexDOB = ConvertToHexWithHeader("DTE", dob);
             string hexGender = ConvertToHexWithHeader("GDR", gender);
             string hexAddress = ConvertToHexWithHeader("ADR", address);
             string hexPhone = ConvertToHexWithHeader("NUM", phone);
 
-            Debug.WriteLine($"{hexImage} {hexName} {hexDOB} {hexGender} {hexAddress} {hexPhone}");
+            Debug.WriteLine(
+                $"INI DATA ENCODE: {hexImage} {hexName} {hexDOB} {hexGender} {hexAddress} {hexPhone}"
+            );
             return $"{hexImage} {hexName} {hexDOB} {hexGender} {hexAddress} {hexPhone}";
         }
 
@@ -96,6 +121,7 @@ namespace ProfileCard
             if (result == DialogResult.Yes)
             {
                 EncodeProfileData();
+                //SplitDataForCard();
                 //MessageBox.Show(
                 //    "Confirmed successfully!",
                 //    "Success",
@@ -131,23 +157,16 @@ namespace ProfileCard
             long quality
         )
         {
-            if (image == null)
-                throw new ArgumentNullException(nameof(image), "Image cannot be null.");
-
-            using (Bitmap resizedImage = new Bitmap(image, new Size(width, height)))
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
-                    EncoderParameters encoderParameters = new EncoderParameters(1);
-                    encoderParameters.Param[0] = new EncoderParameter(
-                        System.Drawing.Imaging.Encoder.Quality,
-                        quality
-                    );
-                    resizedImage.Save(ms, jpgEncoder, encoderParameters);
-                    return ms.ToArray();
-                }
-            }
+            using Bitmap resizedImage = new Bitmap(image, new Size(width, height));
+            using MemoryStream ms = new MemoryStream();
+            ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+            EncoderParameters encoderParameters = new EncoderParameters(1);
+            encoderParameters.Param[0] = new EncoderParameter(
+                System.Drawing.Imaging.Encoder.Quality,
+                quality
+            );
+            resizedImage.Save(ms, jpgEncoder, encoderParameters);
+            return ms.ToArray();
         }
 
         private ImageCodecInfo GetEncoder(ImageFormat format)
