@@ -24,21 +24,22 @@ namespace ProfileCard
             InitializeComponent();
         }
 
-        public static List<byte[]> SplitDataForCard(byte[] encodedData, int blockSize = 16)
-        {
-            List<byte[]> splitData = new List<byte[]>();
+        //split data unfixed
+        //public static List<byte[]> SplitDataForCard(byte[] encodedData, int blockSize = 16)
+        //{
+        //    List<byte[]> splitData = new List<byte[]>();
 
-            for (int i = 0; i < encodedData.Length; i += blockSize)
-            {
-                int length = Math.Min(blockSize, encodedData.Length - i);
-                byte[] block = new byte[length];
-                Array.Copy(encodedData, i, block, 0, length);
-                splitData.Add(block);
+        //    for (int i = 0; i < encodedData.Length; i += blockSize)
+        //    {
+        //        int length = Math.Min(blockSize, encodedData.Length - i);
+        //        byte[] block = new byte[length];
+        //        Array.Copy(encodedData, i, block, 0, length);
+        //        splitData.Add(block);
 
-                Debug.WriteLine($"Split Block: {BitConverter.ToString(block)}");
-            }
-            return splitData;
-        }
+        //        Debug.WriteLine($"Split Block: {BitConverter.ToString(block)}");
+        //    }
+        //    return splitData;
+        //}
 
         private void UpdateLabelVisibility()
         {
