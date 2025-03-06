@@ -41,6 +41,7 @@
             TxtNumber = new TextBox();
             BtnConfirm = new Button();
             BtnReset = new Button();
+            label6 = new Label();
             ((System.ComponentModel.ISupportInitialize)ProfilePict).BeginInit();
             SuspendLayout();
             // 
@@ -55,11 +56,13 @@
             // 
             // ProfilePict
             // 
-            ProfilePict.Location = new Point(149, 12);
+            ProfilePict.BorderStyle = BorderStyle.FixedSingle;
+            ProfilePict.Location = new Point(150, 12);
             ProfilePict.Name = "ProfilePict";
-            ProfilePict.Size = new Size(100, 114);
+            ProfilePict.Size = new Size(100, 120);
             ProfilePict.TabIndex = 1;
             ProfilePict.TabStop = false;
+            ProfilePict.Click += ProfilePict_Click;
             // 
             // label2
             // 
@@ -100,6 +103,7 @@
             // TxtName
             // 
             TxtName.Location = new Point(125, 158);
+            TxtName.MaxLength = 255;
             TxtName.Name = "TxtName";
             TxtName.Size = new Size(258, 23);
             TxtName.TabIndex = 6;
@@ -107,6 +111,7 @@
             // TxtBirthDate
             // 
             TxtBirthDate.Location = new Point(125, 187);
+            TxtBirthDate.MaxLength = 50;
             TxtBirthDate.Name = "TxtBirthDate";
             TxtBirthDate.Size = new Size(258, 23);
             TxtBirthDate.TabIndex = 7;
@@ -114,6 +119,7 @@
             // TxtGender
             // 
             TxtGender.Location = new Point(125, 216);
+            TxtGender.MaxLength = 10;
             TxtGender.Name = "TxtGender";
             TxtGender.Size = new Size(258, 23);
             TxtGender.TabIndex = 8;
@@ -121,6 +127,7 @@
             // TxtAddress
             // 
             TxtAddress.Location = new Point(125, 245);
+            TxtAddress.MaxLength = 255;
             TxtAddress.Multiline = true;
             TxtAddress.Name = "TxtAddress";
             TxtAddress.Size = new Size(258, 66);
@@ -129,6 +136,7 @@
             // TxtNumber
             // 
             TxtNumber.Location = new Point(125, 317);
+            TxtNumber.MaxLength = 15;
             TxtNumber.Name = "TxtNumber";
             TxtNumber.Size = new Size(258, 23);
             TxtNumber.TabIndex = 10;
@@ -141,6 +149,7 @@
             BtnConfirm.TabIndex = 11;
             BtnConfirm.Text = "Confirm";
             BtnConfirm.UseVisualStyleBackColor = true;
+            BtnConfirm.Click += BtnConfirm_Click;
             // 
             // BtnReset
             // 
@@ -150,12 +159,24 @@
             BtnReset.TabIndex = 12;
             BtnReset.Text = "Reset";
             BtnReset.UseVisualStyleBackColor = true;
+            BtnReset.Click += BtnReset_Click;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Font = new Font("Segoe UI", 7F);
+            label6.Location = new Point(174, 65);
+            label6.Name = "label6";
+            label6.Size = new Size(54, 12);
+            label6.TabIndex = 13;
+            label6.Text = "Add Image";
             // 
             // ProfileCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(395, 423);
+            ClientSize = new Size(399, 423);
+            Controls.Add(label6);
             Controls.Add(BtnReset);
             Controls.Add(BtnConfirm);
             Controls.Add(TxtNumber);
@@ -191,5 +212,6 @@
         private TextBox TxtNumber;
         private Button BtnConfirm;
         private Button BtnReset;
+        private Label label6;
     }
 }
