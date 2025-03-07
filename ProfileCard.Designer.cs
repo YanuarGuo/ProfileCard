@@ -42,7 +42,18 @@
             BtnConfirm = new Button();
             BtnReset = new Button();
             label6 = new Label();
+            BtnRead = new Button();
+            GBoxConnectReader = new GroupBox();
+            btnGetUID = new Button();
+            bConnect = new Button();
+            bInit = new Button();
+            cbReader = new ComboBox();
+            label7 = new Label();
+            mMsg = new ListBox();
+            bReset = new Button();
+            bClear = new Button();
             ((System.ComponentModel.ISupportInitialize)ProfilePict).BeginInit();
+            GBoxConnectReader.SuspendLayout();
             SuspendLayout();
             // 
             // label1
@@ -57,7 +68,7 @@
             // ProfilePict
             // 
             ProfilePict.BorderStyle = BorderStyle.FixedSingle;
-            ProfilePict.Location = new Point(150, 12);
+            ProfilePict.Location = new Point(152, 12);
             ProfilePict.Name = "ProfilePict";
             ProfilePict.Size = new Size(100, 120);
             ProfilePict.TabIndex = 1;
@@ -143,22 +154,24 @@
             // 
             // BtnConfirm
             // 
-            BtnConfirm.Location = new Point(290, 385);
+            BtnConfirm.BackColor = SystemColors.ButtonHighlight;
+            BtnConfirm.Location = new Point(298, 362);
             BtnConfirm.Name = "BtnConfirm";
-            BtnConfirm.Size = new Size(93, 23);
+            BtnConfirm.Size = new Size(85, 23);
             BtnConfirm.TabIndex = 11;
             BtnConfirm.Text = "Confirm";
-            BtnConfirm.UseVisualStyleBackColor = true;
+            BtnConfirm.UseVisualStyleBackColor = false;
             BtnConfirm.Click += BtnConfirm_Click;
             // 
             // BtnReset
             // 
-            BtnReset.Location = new Point(191, 385);
+            BtnReset.BackColor = SystemColors.ButtonHighlight;
+            BtnReset.Location = new Point(207, 362);
             BtnReset.Name = "BtnReset";
-            BtnReset.Size = new Size(93, 23);
+            BtnReset.Size = new Size(85, 23);
             BtnReset.TabIndex = 12;
             BtnReset.Text = "Reset";
-            BtnReset.UseVisualStyleBackColor = true;
+            BtnReset.UseVisualStyleBackColor = false;
             BtnReset.Click += BtnReset_Click;
             // 
             // label6
@@ -171,11 +184,121 @@
             label6.TabIndex = 13;
             label6.Text = "Add Image";
             // 
+            // BtnRead
+            // 
+            BtnRead.BackColor = SystemColors.ButtonHighlight;
+            BtnRead.Location = new Point(116, 362);
+            BtnRead.Name = "BtnRead";
+            BtnRead.Size = new Size(85, 23);
+            BtnRead.TabIndex = 14;
+            BtnRead.Text = "Read";
+            BtnRead.UseVisualStyleBackColor = false;
+            // 
+            // GBoxConnectReader
+            // 
+            GBoxConnectReader.Controls.Add(btnGetUID);
+            GBoxConnectReader.Controls.Add(bConnect);
+            GBoxConnectReader.Controls.Add(bInit);
+            GBoxConnectReader.Controls.Add(cbReader);
+            GBoxConnectReader.Controls.Add(label7);
+            GBoxConnectReader.Location = new Point(403, 12);
+            GBoxConnectReader.Name = "GBoxConnectReader";
+            GBoxConnectReader.Size = new Size(378, 103);
+            GBoxConnectReader.TabIndex = 17;
+            GBoxConnectReader.TabStop = false;
+            GBoxConnectReader.Text = "Reader's Connection";
+            // 
+            // btnGetUID
+            // 
+            btnGetUID.BackColor = SystemColors.ButtonHighlight;
+            btnGetUID.Location = new Point(104, 65);
+            btnGetUID.Name = "btnGetUID";
+            btnGetUID.Size = new Size(85, 23);
+            btnGetUID.TabIndex = 20;
+            btnGetUID.Text = "Get UID";
+            btnGetUID.UseVisualStyleBackColor = false;
+            btnGetUID.Click += btnGetUID_Click;
+            // 
+            // bConnect
+            // 
+            bConnect.BackColor = SystemColors.ButtonHighlight;
+            bConnect.Location = new Point(195, 65);
+            bConnect.Name = "bConnect";
+            bConnect.Size = new Size(85, 23);
+            bConnect.TabIndex = 19;
+            bConnect.Text = "Connect";
+            bConnect.UseVisualStyleBackColor = false;
+            bConnect.Click += bConnect_Click;
+            // 
+            // bInit
+            // 
+            bInit.BackColor = SystemColors.ButtonHighlight;
+            bInit.Location = new Point(286, 65);
+            bInit.Name = "bInit";
+            bInit.Size = new Size(85, 23);
+            bInit.TabIndex = 17;
+            bInit.Text = "Initialize";
+            bInit.UseVisualStyleBackColor = false;
+            bInit.Click += bInit_Click;
+            // 
+            // cbReader
+            // 
+            cbReader.FormattingEnabled = true;
+            cbReader.Location = new Point(87, 25);
+            cbReader.Name = "cbReader";
+            cbReader.Size = new Size(284, 23);
+            cbReader.TabIndex = 15;
+            // 
+            // label7
+            // 
+            label7.AutoSize = true;
+            label7.Location = new Point(6, 28);
+            label7.Name = "label7";
+            label7.Size = new Size(77, 15);
+            label7.TabIndex = 16;
+            label7.Text = "Select Reader";
+            // 
+            // mMsg
+            // 
+            mMsg.FormattingEnabled = true;
+            mMsg.ItemHeight = 15;
+            mMsg.Location = new Point(403, 131);
+            mMsg.Name = "mMsg";
+            mMsg.Size = new Size(380, 214);
+            mMsg.TabIndex = 18;
+            // 
+            // bReset
+            // 
+            bReset.BackColor = SystemColors.ButtonHighlight;
+            bReset.Location = new Point(689, 362);
+            bReset.Name = "bReset";
+            bReset.Size = new Size(85, 23);
+            bReset.TabIndex = 21;
+            bReset.Text = "Reset";
+            bReset.UseVisualStyleBackColor = false;
+            bReset.Click += bReset_Click;
+            // 
+            // bClear
+            // 
+            bClear.BackColor = SystemColors.ButtonHighlight;
+            bClear.Location = new Point(598, 362);
+            bClear.Name = "bClear";
+            bClear.Size = new Size(85, 23);
+            bClear.TabIndex = 22;
+            bClear.Text = "Clear";
+            bClear.UseVisualStyleBackColor = false;
+            bClear.Click += bClear_Click;
+            // 
             // ProfileCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(399, 423);
+            ClientSize = new Size(795, 406);
+            Controls.Add(bClear);
+            Controls.Add(bReset);
+            Controls.Add(mMsg);
+            Controls.Add(BtnRead);
+            Controls.Add(GBoxConnectReader);
             Controls.Add(label6);
             Controls.Add(BtnReset);
             Controls.Add(BtnConfirm);
@@ -192,7 +315,10 @@
             Controls.Add(label1);
             Name = "ProfileCard";
             Text = "ProfileCard";
+            Load += ProfileCard_Load;
             ((System.ComponentModel.ISupportInitialize)ProfilePict).EndInit();
+            GBoxConnectReader.ResumeLayout(false);
+            GBoxConnectReader.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -213,5 +339,15 @@
         private Button BtnConfirm;
         private Button BtnReset;
         private Label label6;
+        private Button BtnRead;
+        private GroupBox GBoxConnectReader;
+        private ListBox mMsg;
+        private Button bConnect;
+        private Button bInit;
+        private ComboBox cbReader;
+        private Label label7;
+        private Button btnGetUID;
+        private Button bReset;
+        private Button bClear;
     }
 }
