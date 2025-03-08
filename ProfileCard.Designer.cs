@@ -52,8 +52,11 @@
             mMsg = new ListBox();
             bReset = new Button();
             bClear = new Button();
+            dReadAll = new DataGridView();
+            BtnReadProfile = new Button();
             ((System.ComponentModel.ISupportInitialize)ProfilePict).BeginInit();
             GBoxConnectReader.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)dReadAll).BeginInit();
             SuspendLayout();
             // 
             // label1
@@ -166,7 +169,7 @@
             // BtnReset
             // 
             BtnReset.BackColor = SystemColors.ButtonHighlight;
-            BtnReset.Location = new Point(207, 362);
+            BtnReset.Location = new Point(116, 362);
             BtnReset.Name = "BtnReset";
             BtnReset.Size = new Size(85, 23);
             BtnReset.TabIndex = 12;
@@ -187,12 +190,13 @@
             // BtnRead
             // 
             BtnRead.BackColor = SystemColors.ButtonHighlight;
-            BtnRead.Location = new Point(116, 362);
+            BtnRead.Location = new Point(1169, 362);
             BtnRead.Name = "BtnRead";
-            BtnRead.Size = new Size(85, 23);
+            BtnRead.Size = new Size(107, 23);
             BtnRead.TabIndex = 14;
-            BtnRead.Text = "Read";
+            BtnRead.Text = "Read All Block";
             BtnRead.UseVisualStyleBackColor = false;
+            BtnRead.Click += BtnRead_Click;
             // 
             // GBoxConnectReader
             // 
@@ -203,7 +207,7 @@
             GBoxConnectReader.Controls.Add(label7);
             GBoxConnectReader.Location = new Point(403, 12);
             GBoxConnectReader.Name = "GBoxConnectReader";
-            GBoxConnectReader.Size = new Size(378, 103);
+            GBoxConnectReader.Size = new Size(393, 110);
             GBoxConnectReader.TabIndex = 17;
             GBoxConnectReader.TabStop = false;
             GBoxConnectReader.Text = "Reader's Connection";
@@ -211,7 +215,7 @@
             // btnGetUID
             // 
             btnGetUID.BackColor = SystemColors.ButtonHighlight;
-            btnGetUID.Location = new Point(104, 65);
+            btnGetUID.Location = new Point(116, 74);
             btnGetUID.Name = "btnGetUID";
             btnGetUID.Size = new Size(85, 23);
             btnGetUID.TabIndex = 20;
@@ -222,7 +226,7 @@
             // bConnect
             // 
             bConnect.BackColor = SystemColors.ButtonHighlight;
-            bConnect.Location = new Point(195, 65);
+            bConnect.Location = new Point(207, 74);
             bConnect.Name = "bConnect";
             bConnect.Size = new Size(85, 23);
             bConnect.TabIndex = 19;
@@ -233,7 +237,7 @@
             // bInit
             // 
             bInit.BackColor = SystemColors.ButtonHighlight;
-            bInit.Location = new Point(286, 65);
+            bInit.Location = new Point(298, 74);
             bInit.Name = "bInit";
             bInit.Size = new Size(85, 23);
             bInit.TabIndex = 17;
@@ -246,7 +250,7 @@
             cbReader.FormattingEnabled = true;
             cbReader.Location = new Point(87, 25);
             cbReader.Name = "cbReader";
-            cbReader.Size = new Size(284, 23);
+            cbReader.Size = new Size(296, 23);
             cbReader.TabIndex = 15;
             // 
             // label7
@@ -264,13 +268,13 @@
             mMsg.ItemHeight = 15;
             mMsg.Location = new Point(403, 131);
             mMsg.Name = "mMsg";
-            mMsg.Size = new Size(380, 214);
+            mMsg.Size = new Size(393, 214);
             mMsg.TabIndex = 18;
             // 
             // bReset
             // 
             bReset.BackColor = SystemColors.ButtonHighlight;
-            bReset.Location = new Point(689, 362);
+            bReset.Location = new Point(701, 362);
             bReset.Name = "bReset";
             bReset.Size = new Size(85, 23);
             bReset.TabIndex = 21;
@@ -281,7 +285,7 @@
             // bClear
             // 
             bClear.BackColor = SystemColors.ButtonHighlight;
-            bClear.Location = new Point(598, 362);
+            bClear.Location = new Point(610, 362);
             bClear.Name = "bClear";
             bClear.Size = new Size(85, 23);
             bClear.TabIndex = 22;
@@ -289,11 +293,33 @@
             bClear.UseVisualStyleBackColor = false;
             bClear.Click += bClear_Click;
             // 
+            // dReadAll
+            // 
+            dReadAll.BackgroundColor = SystemColors.ButtonHighlight;
+            dReadAll.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dReadAll.Location = new Point(816, 12);
+            dReadAll.Name = "dReadAll";
+            dReadAll.Size = new Size(460, 333);
+            dReadAll.TabIndex = 23;
+            // 
+            // BtnReadProfile
+            // 
+            BtnReadProfile.BackColor = SystemColors.ButtonHighlight;
+            BtnReadProfile.Location = new Point(207, 362);
+            BtnReadProfile.Name = "BtnReadProfile";
+            BtnReadProfile.Size = new Size(85, 23);
+            BtnReadProfile.TabIndex = 24;
+            BtnReadProfile.Text = "Read Profile";
+            BtnReadProfile.UseVisualStyleBackColor = false;
+            BtnReadProfile.Click += BtnReadProfile_Click;
+            // 
             // ProfileCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(795, 406);
+            ClientSize = new Size(1288, 400);
+            Controls.Add(BtnReadProfile);
+            Controls.Add(dReadAll);
             Controls.Add(bClear);
             Controls.Add(bReset);
             Controls.Add(mMsg);
@@ -319,6 +345,7 @@
             ((System.ComponentModel.ISupportInitialize)ProfilePict).EndInit();
             GBoxConnectReader.ResumeLayout(false);
             GBoxConnectReader.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)dReadAll).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -349,5 +376,7 @@
         private Button btnGetUID;
         private Button bReset;
         private Button bClear;
+        private DataGridView dReadAll;
+        private Button BtnReadProfile;
     }
 }
