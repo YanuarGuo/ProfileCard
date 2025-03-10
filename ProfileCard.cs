@@ -8,7 +8,9 @@ using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 using System.Linq;
 using System.Reflection.PortableExecutable;
+using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -104,42 +106,6 @@ namespace ProfileCard
             btnGetUID.Enabled = false;
         }
 
-        private List<byte[]> SplitData()
-        {
-            string hexData = EncodeProfileData();
-            hexData = hexData.Replace(" ", "");
-
-            if (hexData.Length % 2 != 0)
-            {
-                throw new InvalidOperationException("Hex string has an odd length.");
-            }
-
-            byte[] byteArray = Enumerable
-                .Range(0, hexData.Length / 2)
-                .Select(i => Convert.ToByte(hexData.Substring(i * 2, 2), 16))
-                .ToArray();
-
-            int chunkSize = 16;
-            List<byte[]> splitDataList = new List<byte[]>();
-
-            for (int i = 0; i < byteArray.Length; i += chunkSize)
-            {
-                byte[] splitDataReturn = byteArray.Skip(i).Take(chunkSize).ToArray();
-
-                if (splitDataReturn.Length < chunkSize)
-                {
-                    Array.Resize(ref splitDataReturn, chunkSize);
-                }
-
-                splitDataList.Add(splitDataReturn);
-                Debug.WriteLine(
-                    $"Chunk {i / chunkSize}: {BitConverter.ToString(splitDataReturn).Replace("-", " ")}"
-                );
-            }
-
-            return splitDataList;
-        }
-
         private void UpdateLabelVisibility()
         {
             if (ProfilePict.Image != null)
@@ -195,15 +161,72 @@ namespace ProfileCard
             {
                 compressedImage = CompressImage(ProfilePict.Image, 40, 60, 80);
             }
-            string hexImage =
-                compressedImage != null ? ConvertToHexWithHeader("PIC", compressedImage) : "PIC00";
-            string hexName = ConvertToHexWithHeader("NME", name);
-            string hexDOB = ConvertToHexWithHeader("DTE", dob);
-            string hexGender = ConvertToHexWithHeader("GDR", gender);
-            string hexAddress = ConvertToHexWithHeader("ADR", address);
-            string hexPhone = ConvertToHexWithHeader("NUM", phone);
 
-            return $"{hexImage} {hexName} {hexDOB} {hexGender} {hexAddress} {hexPhone}";
+            string hexName = ConvertStringToHexWithHeader("*", name);
+            string hexDOB = ConvertStringToHexWithHeader("*", dob);
+            string hexGender = ConvertStringToHexWithHeader("*", gender);
+            string hexAddress = ConvertStringToHexWithHeader("*", address);
+            string hexPhone = ConvertStringToHexWithHeader("*", phone);
+
+            string hexTextData = $"{hexName}{hexDOB}{hexGender}{hexAddress}{hexPhone}";
+            Debug.WriteLine($"Text data length: {hexTextData}");
+
+            byte[] textBytes = Enumerable
+                .Range(0, hexTextData.Length / 2)
+                .Select(i => Convert.ToByte(hexTextData.Substring(i * 2, 2), 16))
+                .ToArray();
+
+            int remainder = textBytes.Length % 16;
+            int paddingSize = remainder == 0 ? 0 : 16 - remainder;
+
+            byte[] separator = new byte[16];
+            byte[] paddedTextBytes = textBytes
+                .Concat(new byte[paddingSize])
+                .Concat(separator)
+                .ToArray();
+
+            byte[] imageBytes = compressedImage ?? Array.Empty<byte>();
+
+            byte[] finalData = paddedTextBytes.Concat(imageBytes).ToArray();
+
+            Debug.WriteLine($"Final data: {finalData}");
+            return BitConverter.ToString(finalData).Replace("-", " ");
+        }
+
+        private List<byte[]> SplitData()
+        {
+            string hexData = EncodeProfileData();
+            hexData = hexData.Replace(" ", "");
+
+            if (hexData.Length % 2 != 0)
+            {
+                throw new InvalidOperationException("Hex string has an odd length.");
+            }
+
+            byte[] byteArray = Enumerable
+                .Range(0, hexData.Length / 2)
+                .Select(i => Convert.ToByte(hexData.Substring(i * 2, 2), 16))
+                .ToArray();
+
+            int chunkSize = 16;
+            List<byte[]> splitDataList = new List<byte[]>();
+
+            for (int i = 0; i < byteArray.Length; i += chunkSize)
+            {
+                byte[] splitDataReturn = byteArray.Skip(i).Take(chunkSize).ToArray();
+
+                if (splitDataReturn.Length < chunkSize)
+                {
+                    Array.Resize(ref splitDataReturn, chunkSize);
+                }
+
+                splitDataList.Add(splitDataReturn);
+                Debug.WriteLine(
+                    $"Chunk {i / chunkSize}: {BitConverter.ToString(splitDataReturn).Replace("-", " ")}"
+                );
+            }
+
+            return splitDataList;
         }
 
         private void BtnConfirm_Click(object sender, EventArgs e)
@@ -264,22 +287,13 @@ namespace ProfileCard
             }
         }
 
-        private static string ConvertToHexWithHeader(string header, byte[] data)
+        string ConvertStringToHexWithHeader(string separator, string input)
         {
-            string hexHeader = BitConverter
-                .ToString(Encoding.ASCII.GetBytes(header))
+            string hexSeparator = BitConverter
+                .ToString(Encoding.ASCII.GetBytes(separator))
                 .Replace("-", "");
-            string hexData = BitConverter.ToString(data).Replace("-", "");
-            return $"{hexHeader} {hexData}";
-        }
-
-        private static string ConvertToHexWithHeader(string header, string data)
-        {
-            string hexHeader = BitConverter
-                .ToString(Encoding.ASCII.GetBytes(header))
-                .Replace("-", "");
-            string hexData = BitConverter.ToString(Encoding.ASCII.GetBytes(data)).Replace("-", "");
-            return $"{hexHeader} {hexData}";
+            string hexData = BitConverter.ToString(Encoding.ASCII.GetBytes(input)).Replace("-", "");
+            return hexSeparator + hexData;
         }
 
         private static byte[] CompressImage(
@@ -856,6 +870,11 @@ namespace ProfileCard
 
         private byte[] ReadBlock(int block)
         {
+            if (SECTOR_TRAILERS.Contains(block))
+            {
+                return null;
+            }
+
             ClearBuffers();
             SendBuff[0] = 0xFF;
             SendBuff[1] = 0xB0;
@@ -871,74 +890,6 @@ namespace ProfileCard
                 return RecvBuff.Take(16).ToArray();
             }
             return null;
-        }
-
-        private void ParseProfileData(byte[] data)
-        {
-            Dictionary<string, string> profileData = new Dictionary<string, string>();
-
-            int index = 0;
-            while (index < data.Length - 3)
-            {
-                string header = Encoding.ASCII.GetString(data, index, 3);
-                index += 3;
-
-                List<byte> content = new List<byte>();
-                while (
-                    index < data.Length
-                    && data[index] != 0x50
-                    && data[index] != 0x4E
-                    && data[index] != 0x44
-                    && data[index] != 0x47
-                    && data[index] != 0x41
-                    && data[index] != 0x4E
-                )
-                {
-                    content.Add(data[index]);
-                    index++;
-                }
-
-                profileData[header] = Encoding.ASCII.GetString(content.ToArray()).TrimEnd('\0');
-            }
-
-            if (profileData.ContainsKey("NME"))
-                TxtName.Text = profileData["NME"];
-            if (profileData.ContainsKey("DTE"))
-                TxtBirthDate.Text = profileData["DTE"];
-            if (profileData.ContainsKey("GDR"))
-                TxtGender.Text = profileData["GDR"];
-            if (profileData.ContainsKey("ADR"))
-                TxtAddress.Text = profileData["ADR"];
-            if (profileData.ContainsKey("NUM"))
-                TxtNumber.Text = profileData["NUM"];
-
-            if (profileData.ContainsKey("PIC"))
-            {
-                string imageData = profileData["PIC"];
-                MessageBox.Show(
-                    $"Data Gambar (PIC): {imageData}",
-                    "Debug",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-                try
-                {
-                    byte[] imageBytes = Encoding.ASCII.GetBytes(profileData["PIC"]);
-                    using (MemoryStream ms = new MemoryStream(imageBytes))
-                    {
-                        ProfilePict.Image = System.Drawing.Image.FromStream(ms);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(
-                        $"Gagal menampilkan gambar: {ex.Message}",
-                        "Error",
-                        MessageBoxButtons.OK,
-                        MessageBoxIcon.Error
-                    );
-                }
-            }
         }
 
         private void BtnReadProfile_Click(object sender, EventArgs e)
@@ -987,11 +938,20 @@ namespace ProfileCard
                 16,
                 16,
             };
+
+            int startSector = 2;
+            int startBlock = 8;
+
             int blockIndex = 4;
 
             try
             {
-                for (int sector = 1; sector < sectorSizes.Length; sector++)
+                for (int sector = 1; sector < startSector; sector++)
+                {
+                    blockIndex += sectorSizes[sector];
+                }
+
+                for (int sector = startSector; sector < sectorSizes.Length; sector++)
                 {
                     int blocksInSector = sectorSizes[sector];
 
@@ -1007,9 +967,19 @@ namespace ProfileCard
                         return;
                     }
 
-                    for (int i = 0; i < blocksInSector - 1; i++)
+                    for (
+                        int i = (sector == startSector ? startBlock - blockIndex : 0);
+                        i < blocksInSector - 1;
+                        i++
+                    )
                     {
                         int currentBlock = blockIndex + i;
+
+                        if (SECTOR_TRAILERS.Contains(currentBlock))
+                        {
+                            continue;
+                        }
+
                         byte[] blockData = ReadBlock(currentBlock);
                         if (blockData != null)
                         {
@@ -1042,5 +1012,233 @@ namespace ProfileCard
                 );
             }
         }
+
+        static byte[] PadLines(byte[] bytes, int rows, int columns)
+        {
+            int currentStride = columns; // 3
+            int newStride = columns; // 4
+            byte[] newBytes = new byte[newStride * rows];
+            for (int i = 0; i < rows; i++)
+                Buffer.BlockCopy(bytes, currentStride * i, newBytes, newStride * i, currentStride);
+            return newBytes;
+        }
+
+        private void ParseProfileData(byte[] rawData)
+        {
+            try
+            {
+                Debug.WriteLine($"Total Read Data Length: {rawData.Length}");
+
+                int imageStartIndex = FindSeparatorIndex(rawData);
+                if (imageStartIndex == rawData.Length)
+                {
+                    Debug.WriteLine("Error: No image separator (16 bytes of 0x00) found!");
+                    return;
+                }
+                Debug.WriteLine($"Image Separator Found at Index: {imageStartIndex}");
+
+                byte[] textData = rawData.Take(imageStartIndex).ToArray();
+                string profileText = Encoding.UTF8.GetString(textData);
+                Debug.WriteLine($"Decoded text: {profileText}");
+
+                string[] parts = profileText.Split('*');
+                if (parts.Length > 0 && string.IsNullOrWhiteSpace(parts[0]))
+                {
+                    parts = [.. parts.Skip(1)];
+                }
+
+                Debug.WriteLine($"Parts Count: {parts.Length}");
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    Debug.WriteLine($"Part {i}: {parts[i]}");
+                }
+
+                if (parts.Length >= 5)
+                {
+                    TxtName.Text = parts[0];
+                    TxtBirthDate.Text = parts[1];
+                    TxtGender.Text = parts[2];
+                    TxtAddress.Text = parts[3];
+                    TxtNumber.Text = parts[4];
+                }
+                else
+                {
+                    MessageBox.Show(
+                        "Data profil tidak lengkap!",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                    return;
+                }
+
+                // IMAGE SECTION
+
+                int realImageStartIndex = FindImageStartIndex(rawData, imageStartIndex);
+                if (realImageStartIndex == -1)
+                {
+                    Debug.WriteLine("Error: No image header (FF D8) found after separator!");
+                    return;
+                }
+                Debug.WriteLine($"Image Start Index: {realImageStartIndex}");
+
+                byte[] imageBytes = rawData.Skip(realImageStartIndex).ToArray();
+                Debug.WriteLine($"Image Bytes Length: {imageBytes.Length}");
+
+                if (imageBytes.Length < 100)
+                {
+                    Debug.WriteLine("Error: Image data terlalu kecil untuk menjadi gambar valid.");
+                    return;
+                }
+
+                Debug.WriteLine(
+                    $"First 10 Bytes of Image: {BitConverter.ToString(imageBytes.Take(10).ToArray())}"
+                );
+
+                using (MemoryStream ms = new MemoryStream(imageBytes))
+                {
+                    try
+                    {
+                        using (System.Drawing.Image img = System.Drawing.Image.FromStream(ms))
+                        {
+                            ProfilePict.Image = (System.Drawing.Image)img.Clone();
+
+                            string outputPath = "D:\\test_image.jpg";
+                            ProfilePict.Image.Save(
+                                outputPath,
+                                System.Drawing.Imaging.ImageFormat.Jpeg
+                            );
+                            Debug.WriteLine($"Gambar berhasil disimpan di {outputPath}");
+                        }
+                    }
+                    catch (Exception imgEx)
+                    {
+                        Debug.WriteLine($"Error saat membaca gambar: {imgEx.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Kesalahan saat membaca profil: {ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+        private int FindImageStartIndex(byte[] data, int startSearchIndex)
+        {
+            for (int i = startSearchIndex; i < data.Length - 1; i++)
+            {
+                if (data[i] == 0xFF && data[i + 1] == 0xD8) // Cek jika ketemu FF D8
+                {
+                    return i;
+                }
+            }
+            return -1; // Jika tidak ditemukan
+        }
+
+        private static int FindSeparatorIndex(byte[] data)
+        {
+            for (int i = 0; i <= data.Length - 16; i++)
+            {
+                if (data.Skip(i).Take(16).All(b => b == 0x00))
+                {
+                    return i;
+                }
+            }
+            return data.Length;
+        }
+
+        private bool ResetDataBlock(int block, byte[] data)
+        {
+            if (data.Length != 16)
+            {
+                throw new ArgumentException("Data harus 16 byte.");
+            }
+
+            ClearBuffers();
+            SendBuff[0] = 0xFF;
+            SendBuff[1] = 0xD6;
+            SendBuff[2] = 0x00;
+            SendBuff[3] = (byte)block;
+            SendBuff[4] = 0x10;
+            Array.Copy(data, 0, SendBuff, 5, 16);
+
+            SendLen = 21;
+            RecvLen = 2;
+
+            return SendAPDUandDisplay(2) == ModWinsCard.SCARD_S_SUCCESS;
+        }
+
+        private void BtnResetDataBlock_Click(object sender, EventArgs e)
+        {
+            int startBlock = 8;
+            byte[] emptyBlock = new byte[16];
+
+            try
+            {
+                int blockIndex = startBlock;
+                for (int sector = 2; sector < 40; sector++)
+                {
+                    int blocksInSector = (sector < 32) ? 4 : 16;
+                    int trailerBlock = blockIndex + blocksInSector - 1;
+
+                    if (!Authenticate(trailerBlock))
+                    {
+                        MessageBox.Show(
+                            $"Autentikasi gagal untuk sektor {sector}!",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
+                        return;
+                    }
+
+                    for (int i = 0; i < blocksInSector - 1; i++)
+                    {
+                        int currentBlock = blockIndex + i;
+
+                        if (SECTOR_TRAILERS.Contains(currentBlock))
+                        {
+                            continue;
+                        }
+
+                        if (!ResetDataBlock(currentBlock, emptyBlock))
+                        {
+                            MessageBox.Show(
+                                $"Gagal mereset blok {currentBlock}!",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error
+                            );
+                            return;
+                        }
+                    }
+
+                    blockIndex += blocksInSector;
+                }
+
+                MessageBox.Show(
+                    "Reset Data Block berhasil!",
+                    "Sukses",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Terjadi kesalahan: {ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+        private void HexToImage_Click(object sender, EventArgs e) { }
     }
 }

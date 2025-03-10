@@ -54,6 +54,7 @@
             bClear = new Button();
             dReadAll = new DataGridView();
             BtnReadProfile = new Button();
+            BtnResetDataBlock = new Button();
             ((System.ComponentModel.ISupportInitialize)ProfilePict).BeginInit();
             GBoxConnectReader.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dReadAll).BeginInit();
@@ -313,11 +314,23 @@
             BtnReadProfile.UseVisualStyleBackColor = false;
             BtnReadProfile.Click += BtnReadProfile_Click;
             // 
+            // BtnResetDataBlock
+            // 
+            BtnResetDataBlock.BackColor = SystemColors.ButtonHighlight;
+            BtnResetDataBlock.Location = new Point(1056, 362);
+            BtnResetDataBlock.Name = "BtnResetDataBlock";
+            BtnResetDataBlock.Size = new Size(107, 23);
+            BtnResetDataBlock.TabIndex = 25;
+            BtnResetDataBlock.Text = "Reset Data Block";
+            BtnResetDataBlock.UseVisualStyleBackColor = false;
+            BtnResetDataBlock.Click += BtnResetDataBlock_Click;
+            // 
             // ProfileCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1288, 400);
+            ClientSize = new Size(1288, 401);
+            Controls.Add(BtnResetDataBlock);
             Controls.Add(BtnReadProfile);
             Controls.Add(dReadAll);
             Controls.Add(bClear);
@@ -378,5 +391,6 @@
         private Button bClear;
         private DataGridView dReadAll;
         private Button BtnReadProfile;
+        private Button BtnResetDataBlock;
     }
 }
