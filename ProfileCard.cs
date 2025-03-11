@@ -131,7 +131,7 @@ namespace ProfileCard
                 loadedFilePath = ofd.FileName;
                 originalImage = new Bitmap(loadedFilePath);
 
-                ProfilePict.SizeMode = PictureBoxSizeMode.Zoom;
+                ProfilePict.SizeMode = PictureBoxSizeMode.StretchImage;
                 ProfilePict.Image = originalImage;
 
                 UpdateLabelVisibility();
@@ -159,7 +159,7 @@ namespace ProfileCard
             byte[]? compressedImage = null;
             if (ProfilePict.Image != null)
             {
-                compressedImage = CompressImage(ProfilePict.Image, 40, 60, 80);
+                compressedImage = CompressImage(ProfilePict.Image, 40, 60, 95);
             }
 
             string hexName = ConvertStringToHexWithHeader("*", name);
@@ -169,7 +169,6 @@ namespace ProfileCard
             string hexPhone = ConvertStringToHexWithHeader("*", phone);
 
             string hexTextData = $"{hexName}{hexDOB}{hexGender}{hexAddress}{hexPhone}";
-            Debug.WriteLine($"Text data length: {hexTextData}");
 
             byte[] textBytes = Enumerable
                 .Range(0, hexTextData.Length / 2)
@@ -186,10 +185,8 @@ namespace ProfileCard
                 .ToArray();
 
             byte[] imageBytes = compressedImage ?? Array.Empty<byte>();
-
             byte[] finalData = paddedTextBytes.Concat(imageBytes).ToArray();
 
-            Debug.WriteLine($"Final data: {finalData}");
             return BitConverter.ToString(finalData).Replace("-", " ");
         }
 
@@ -221,9 +218,6 @@ namespace ProfileCard
                 }
 
                 splitDataList.Add(splitDataReturn);
-                Debug.WriteLine(
-                    $"Chunk {i / chunkSize}: {BitConverter.ToString(splitDataReturn).Replace("-", " ")}"
-                );
             }
 
             return splitDataList;
@@ -793,12 +787,10 @@ namespace ProfileCard
 
             if (retCode == ModWinsCard.SCARD_S_SUCCESS)
             {
-                Debug.WriteLine($"Authentication successful for block {block}");
                 return true;
             }
             else
             {
-                Debug.WriteLine($"Authentication failed for block {block}");
                 return false;
             }
         }
@@ -864,8 +856,6 @@ namespace ProfileCard
                 block++;
                 dataIndex++;
             }
-
-            Debug.WriteLine("All data written successfully!");
         }
 
         private byte[] ReadBlock(int block)
@@ -938,10 +928,8 @@ namespace ProfileCard
                 16,
                 16,
             };
-
             int startSector = 2;
             int startBlock = 8;
-
             int blockIndex = 4;
 
             try
@@ -1013,33 +1001,37 @@ namespace ProfileCard
             }
         }
 
-        static byte[] PadLines(byte[] bytes, int rows, int columns)
+        static string GetUniqueFilePath(string filePath)
         {
-            int currentStride = columns; // 3
-            int newStride = columns; // 4
-            byte[] newBytes = new byte[newStride * rows];
-            for (int i = 0; i < rows; i++)
-                Buffer.BlockCopy(bytes, currentStride * i, newBytes, newStride * i, currentStride);
-            return newBytes;
+            string directory = Path.GetDirectoryName(filePath) ?? string.Empty;
+            string fileNameWithoutExt = Path.GetFileNameWithoutExtension(filePath);
+            string extension = Path.GetExtension(filePath);
+
+            int counter = 1;
+            string newFilePath = filePath;
+
+            while (File.Exists(newFilePath))
+            {
+                newFilePath = Path.Combine(directory, $"{fileNameWithoutExt}_{counter}{extension}");
+                counter++;
+            }
+
+            return newFilePath;
         }
 
         private void ParseProfileData(byte[] rawData)
         {
             try
             {
-                Debug.WriteLine($"Total Read Data Length: {rawData.Length}");
-
                 int imageStartIndex = FindSeparatorIndex(rawData);
                 if (imageStartIndex == rawData.Length)
                 {
                     Debug.WriteLine("Error: No image separator (16 bytes of 0x00) found!");
                     return;
                 }
-                Debug.WriteLine($"Image Separator Found at Index: {imageStartIndex}");
 
                 byte[] textData = rawData.Take(imageStartIndex).ToArray();
                 string profileText = Encoding.UTF8.GetString(textData);
-                Debug.WriteLine($"Decoded text: {profileText}");
 
                 string[] parts = profileText.Split('*');
                 if (parts.Length > 0 && string.IsNullOrWhiteSpace(parts[0]))
@@ -1047,7 +1039,6 @@ namespace ProfileCard
                     parts = [.. parts.Skip(1)];
                 }
 
-                Debug.WriteLine($"Parts Count: {parts.Length}");
                 for (int i = 0; i < parts.Length; i++)
                 {
                     Debug.WriteLine($"Part {i}: {parts[i]}");
@@ -1073,48 +1064,33 @@ namespace ProfileCard
                 }
 
                 // IMAGE SECTION
-
                 int realImageStartIndex = FindImageStartIndex(rawData, imageStartIndex);
                 if (realImageStartIndex == -1)
                 {
                     Debug.WriteLine("Error: No image header (FF D8) found after separator!");
                     return;
                 }
-                Debug.WriteLine($"Image Start Index: {realImageStartIndex}");
 
                 byte[] imageBytes = rawData.Skip(realImageStartIndex).ToArray();
-                Debug.WriteLine($"Image Bytes Length: {imageBytes.Length}");
 
-                if (imageBytes.Length < 100)
+                using MemoryStream ms = new(imageBytes);
+                try
                 {
-                    Debug.WriteLine("Error: Image data terlalu kecil untuk menjadi gambar valid.");
-                    return;
+                    using System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
+                    ProfilePict.Image = (System.Drawing.Image)img.Clone();
+                    ProfilePict.SizeMode = PictureBoxSizeMode.StretchImage;
+                    UpdateLabelVisibility();
+
+                    string userInputName = TxtName.Text;
+
+                    string basePath = $"D:\\{userInputName}.jpg";
+                    string outputPath = GetUniqueFilePath(basePath);
+                    ProfilePict.Image.Save(outputPath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    Debug.WriteLine($"Gambar berhasil disimpan di {outputPath}");
                 }
-
-                Debug.WriteLine(
-                    $"First 10 Bytes of Image: {BitConverter.ToString(imageBytes.Take(10).ToArray())}"
-                );
-
-                using (MemoryStream ms = new MemoryStream(imageBytes))
+                catch (Exception imgEx)
                 {
-                    try
-                    {
-                        using (System.Drawing.Image img = System.Drawing.Image.FromStream(ms))
-                        {
-                            ProfilePict.Image = (System.Drawing.Image)img.Clone();
-
-                            string outputPath = "D:\\test_image.jpg";
-                            ProfilePict.Image.Save(
-                                outputPath,
-                                System.Drawing.Imaging.ImageFormat.Jpeg
-                            );
-                            Debug.WriteLine($"Gambar berhasil disimpan di {outputPath}");
-                        }
-                    }
-                    catch (Exception imgEx)
-                    {
-                        Debug.WriteLine($"Error saat membaca gambar: {imgEx.Message}");
-                    }
+                    Debug.WriteLine($"Error saat membaca gambar: {imgEx.Message}");
                 }
             }
             catch (Exception ex)
@@ -1132,12 +1108,12 @@ namespace ProfileCard
         {
             for (int i = startSearchIndex; i < data.Length - 1; i++)
             {
-                if (data[i] == 0xFF && data[i + 1] == 0xD8) // Cek jika ketemu FF D8
+                if (data[i] == 0xFF && data[i + 1] == 0xD8)
                 {
                     return i;
                 }
             }
-            return -1; // Jika tidak ditemukan
+            return -1;
         }
 
         private static int FindSeparatorIndex(byte[] data)

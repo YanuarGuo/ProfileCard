@@ -63,7 +63,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(12, 161);
+            label1.Location = new Point(12, 181);
             label1.Name = "label1";
             label1.Size = new Size(61, 15);
             label1.TabIndex = 0;
@@ -74,7 +74,7 @@
             ProfilePict.BorderStyle = BorderStyle.FixedSingle;
             ProfilePict.Location = new Point(152, 12);
             ProfilePict.Name = "ProfilePict";
-            ProfilePict.Size = new Size(100, 120);
+            ProfilePict.Size = new Size(100, 140);
             ProfilePict.TabIndex = 1;
             ProfilePict.TabStop = false;
             ProfilePict.Click += ProfilePict_Click;
@@ -82,7 +82,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(12, 219);
+            label2.Location = new Point(12, 239);
             label2.Name = "label2";
             label2.Size = new Size(45, 15);
             label2.TabIndex = 2;
@@ -91,7 +91,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(12, 190);
+            label3.Location = new Point(12, 210);
             label3.Name = "label3";
             label3.Size = new Size(73, 15);
             label3.TabIndex = 3;
@@ -100,7 +100,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(12, 249);
+            label4.Location = new Point(12, 269);
             label4.Name = "label4";
             label4.Size = new Size(49, 15);
             label4.TabIndex = 4;
@@ -109,7 +109,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(12, 319);
+            label5.Location = new Point(12, 339);
             label5.Name = "label5";
             label5.Size = new Size(96, 15);
             label5.TabIndex = 5;
@@ -117,7 +117,7 @@
             // 
             // TxtName
             // 
-            TxtName.Location = new Point(125, 158);
+            TxtName.Location = new Point(125, 178);
             TxtName.MaxLength = 255;
             TxtName.Name = "TxtName";
             TxtName.Size = new Size(258, 23);
@@ -125,7 +125,7 @@
             // 
             // TxtBirthDate
             // 
-            TxtBirthDate.Location = new Point(125, 187);
+            TxtBirthDate.Location = new Point(125, 207);
             TxtBirthDate.MaxLength = 50;
             TxtBirthDate.Name = "TxtBirthDate";
             TxtBirthDate.Size = new Size(258, 23);
@@ -133,7 +133,7 @@
             // 
             // TxtGender
             // 
-            TxtGender.Location = new Point(125, 216);
+            TxtGender.Location = new Point(125, 236);
             TxtGender.MaxLength = 10;
             TxtGender.Name = "TxtGender";
             TxtGender.Size = new Size(258, 23);
@@ -141,7 +141,7 @@
             // 
             // TxtAddress
             // 
-            TxtAddress.Location = new Point(125, 245);
+            TxtAddress.Location = new Point(125, 265);
             TxtAddress.MaxLength = 255;
             TxtAddress.Multiline = true;
             TxtAddress.Name = "TxtAddress";
@@ -150,7 +150,7 @@
             // 
             // TxtNumber
             // 
-            TxtNumber.Location = new Point(125, 317);
+            TxtNumber.Location = new Point(125, 337);
             TxtNumber.MaxLength = 15;
             TxtNumber.Name = "TxtNumber";
             TxtNumber.Size = new Size(258, 23);
@@ -159,7 +159,7 @@
             // BtnConfirm
             // 
             BtnConfirm.BackColor = SystemColors.ButtonHighlight;
-            BtnConfirm.Location = new Point(298, 362);
+            BtnConfirm.Location = new Point(298, 382);
             BtnConfirm.Name = "BtnConfirm";
             BtnConfirm.Size = new Size(85, 23);
             BtnConfirm.TabIndex = 11;
@@ -170,7 +170,7 @@
             // BtnReset
             // 
             BtnReset.BackColor = SystemColors.ButtonHighlight;
-            BtnReset.Location = new Point(116, 362);
+            BtnReset.Location = new Point(116, 382);
             BtnReset.Name = "BtnReset";
             BtnReset.Size = new Size(85, 23);
             BtnReset.TabIndex = 12;
@@ -182,7 +182,7 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Segoe UI", 7F);
-            label6.Location = new Point(174, 65);
+            label6.Location = new Point(176, 75);
             label6.Name = "label6";
             label6.Size = new Size(54, 12);
             label6.TabIndex = 13;
@@ -191,7 +191,7 @@
             // BtnRead
             // 
             BtnRead.BackColor = SystemColors.ButtonHighlight;
-            BtnRead.Location = new Point(1169, 362);
+            BtnRead.Location = new Point(1169, 382);
             BtnRead.Name = "BtnRead";
             BtnRead.Size = new Size(107, 23);
             BtnRead.TabIndex = 14;
@@ -269,13 +269,13 @@
             mMsg.ItemHeight = 15;
             mMsg.Location = new Point(403, 131);
             mMsg.Name = "mMsg";
-            mMsg.Size = new Size(393, 214);
+            mMsg.Size = new Size(393, 229);
             mMsg.TabIndex = 18;
             // 
             // bReset
             // 
             bReset.BackColor = SystemColors.ButtonHighlight;
-            bReset.Location = new Point(701, 362);
+            bReset.Location = new Point(701, 382);
             bReset.Name = "bReset";
             bReset.Size = new Size(85, 23);
             bReset.TabIndex = 21;
@@ -286,7 +286,7 @@
             // bClear
             // 
             bClear.BackColor = SystemColors.ButtonHighlight;
-            bClear.Location = new Point(610, 362);
+            bClear.Location = new Point(610, 382);
             bClear.Name = "bClear";
             bClear.Size = new Size(85, 23);
             bClear.TabIndex = 22;
@@ -300,13 +300,13 @@
             dReadAll.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dReadAll.Location = new Point(816, 12);
             dReadAll.Name = "dReadAll";
-            dReadAll.Size = new Size(460, 333);
+            dReadAll.Size = new Size(460, 348);
             dReadAll.TabIndex = 23;
             // 
             // BtnReadProfile
             // 
             BtnReadProfile.BackColor = SystemColors.ButtonHighlight;
-            BtnReadProfile.Location = new Point(207, 362);
+            BtnReadProfile.Location = new Point(207, 382);
             BtnReadProfile.Name = "BtnReadProfile";
             BtnReadProfile.Size = new Size(85, 23);
             BtnReadProfile.TabIndex = 24;
@@ -317,7 +317,7 @@
             // BtnResetDataBlock
             // 
             BtnResetDataBlock.BackColor = SystemColors.ButtonHighlight;
-            BtnResetDataBlock.Location = new Point(1056, 362);
+            BtnResetDataBlock.Location = new Point(1056, 382);
             BtnResetDataBlock.Name = "BtnResetDataBlock";
             BtnResetDataBlock.Size = new Size(107, 23);
             BtnResetDataBlock.TabIndex = 25;
@@ -329,7 +329,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1288, 401);
+            ClientSize = new Size(1288, 440);
             Controls.Add(BtnResetDataBlock);
             Controls.Add(BtnReadProfile);
             Controls.Add(dReadAll);
