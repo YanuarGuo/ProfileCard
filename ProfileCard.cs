@@ -21,8 +21,8 @@ namespace ProfileCard
 {
     public partial class ProfileCard : Form
     {
-        private Bitmap originalImage;
-        private string loadedFilePath;
+        private Bitmap? originalImage;
+        private string? loadedFilePath;
         public int retCode,
             hContext,
             hCard,
@@ -1209,7 +1209,5 @@ namespace ProfileCard
 
             return SendAPDUandDisplay(2) == ModWinsCard.SCARD_S_SUCCESS;
         }
-
-        static void MonitorCardTaps(IntPtr hContext, string readerName) { }
     }
 }
