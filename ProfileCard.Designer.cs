@@ -46,7 +46,6 @@
             GBoxConnectReader = new GroupBox();
             btnGetUID = new Button();
             bConnect = new Button();
-            bInit = new Button();
             cbReader = new ComboBox();
             label7 = new Label();
             mMsg = new ListBox();
@@ -203,7 +202,6 @@
             // 
             GBoxConnectReader.Controls.Add(btnGetUID);
             GBoxConnectReader.Controls.Add(bConnect);
-            GBoxConnectReader.Controls.Add(bInit);
             GBoxConnectReader.Controls.Add(cbReader);
             GBoxConnectReader.Controls.Add(label7);
             GBoxConnectReader.Location = new Point(403, 12);
@@ -216,7 +214,7 @@
             // btnGetUID
             // 
             btnGetUID.BackColor = SystemColors.ButtonHighlight;
-            btnGetUID.Location = new Point(116, 74);
+            btnGetUID.Location = new Point(207, 68);
             btnGetUID.Name = "btnGetUID";
             btnGetUID.Size = new Size(85, 23);
             btnGetUID.TabIndex = 20;
@@ -227,24 +225,13 @@
             // bConnect
             // 
             bConnect.BackColor = SystemColors.ButtonHighlight;
-            bConnect.Location = new Point(207, 74);
+            bConnect.Location = new Point(298, 68);
             bConnect.Name = "bConnect";
             bConnect.Size = new Size(85, 23);
             bConnect.TabIndex = 19;
             bConnect.Text = "Connect";
             bConnect.UseVisualStyleBackColor = false;
             bConnect.Click += bConnect_Click;
-            // 
-            // bInit
-            // 
-            bInit.BackColor = SystemColors.ButtonHighlight;
-            bInit.Location = new Point(298, 74);
-            bInit.Name = "bInit";
-            bInit.Size = new Size(85, 23);
-            bInit.TabIndex = 17;
-            bInit.Text = "Initialize";
-            bInit.UseVisualStyleBackColor = false;
-            bInit.Click += bInit_Click;
             // 
             // cbReader
             // 
@@ -329,7 +316,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1288, 440);
+            ClientSize = new Size(1288, 425);
             Controls.Add(BtnResetDataBlock);
             Controls.Add(BtnReadProfile);
             Controls.Add(dReadAll);
@@ -383,7 +370,6 @@
         private GroupBox GBoxConnectReader;
         private ListBox mMsg;
         private Button bConnect;
-        private Button bInit;
         private ComboBox cbReader;
         private Label label7;
         private Button btnGetUID;
