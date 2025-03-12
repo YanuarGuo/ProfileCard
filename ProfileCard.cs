@@ -88,6 +88,7 @@ namespace ProfileCard
         };
         private string selectedReader = string.Empty;
         private bool isCardPresent = false;
+        private CancellationTokenSource? cts;
 
         public ProfileCard()
         {
@@ -98,6 +99,8 @@ namespace ProfileCard
         {
             InitMenu();
             InitCard();
+            // !! Uncomment line below if you want to start card monitoring automatically !!
+            StartCardMonitoringAsync();
             System.Windows.Forms.Timer cardTimer;
             cardTimer = new System.Windows.Forms.Timer { Interval = 1000 };
             cardTimer.Tick += CheckCardStatus;
@@ -233,6 +236,92 @@ namespace ProfileCard
             }
 
             connActive = true;
+        }
+
+        private void bInit_Click(object sender, EventArgs e)
+        {
+            string ReaderList = "" + Convert.ToChar(0);
+            int indx;
+            int pcchReaders = 0;
+            string rName = "";
+            hContext = 0;
+            retCode = ModWinsCard.SCardEstablishContext(
+                ModWinsCard.SCARD_SCOPE_USER,
+                0,
+                0,
+                ref hContext
+            );
+
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                DisplayOutput(1, retCode, "");
+                return;
+            }
+
+            retCode = ModWinsCard.SCardListReaders(this.hContext, null, null, ref pcchReaders);
+
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                DisplayOutput(1, retCode, "");
+                return;
+            }
+
+            EnableButtons();
+
+            byte[] ReadersList = new byte[pcchReaders];
+
+            retCode = ModWinsCard.SCardListReaders(
+                this.hContext,
+                null,
+                ReadersList,
+                ref pcchReaders
+            );
+
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                mMsg.Items.Add("SCardListReaders Error: " + ModWinsCard.GetScardErrMsg(retCode));
+                mMsg.SelectedIndex = mMsg.Items.Count - 1;
+                return;
+            }
+            else
+            {
+                DisplayOutput(0, 0, " ");
+            }
+
+            rName = "";
+            indx = 0;
+
+            while (ReadersList[indx] != 0)
+            {
+                while (ReadersList[indx] != 0)
+                {
+                    rName = rName + (char)ReadersList[indx];
+                    indx = indx + 1;
+                }
+
+                cbReader.Items.Add(rName);
+                rName = "";
+                indx = indx + 1;
+            }
+
+            if (cbReader.Items.Count > 0)
+            {
+                cbReader.SelectedIndex = 0;
+            }
+
+            indx = 1;
+
+            for (indx = 1; indx <= cbReader.Items.Count - 1; indx++)
+            {
+                cbReader.SelectedIndex = indx;
+
+                if (cbReader.Text == "ACS ACR128U PICC Interface 0")
+                {
+                    cbReader.SelectedIndex = 1;
+                    return;
+                }
+            }
+            return;
         }
 
         private void btnGetUID_Click(object sender, EventArgs e)
@@ -603,6 +692,78 @@ namespace ProfileCard
             }
         }
 
+        private void BtnStartTimer_Click(object sender, EventArgs e)
+        {
+            if (cbReader.SelectedItem != null)
+            {
+                selectedReader = cbReader.SelectedItem?.ToString() ?? string.Empty;
+                cardTimer.Start();
+                BtnStartTimer.Enabled = false;
+                BtnStopTimer.Enabled = true;
+                BtnStartThreading.Enabled = false;
+                BtnStopThreading.Enabled = false;
+                MessageBox.Show(
+                    "Monitoring kartu dimulai!",
+                    "Info",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+            }
+            else
+            {
+                MessageBox.Show(
+                    "Pilih reader terlebih dahulu!",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+        private void BtnStopTimer_Click(object sender, EventArgs e)
+        {
+            cardTimer.Stop();
+            BtnStartTimer.Enabled = true;
+            BtnStopTimer.Enabled = false;
+            BtnStartThreading.Enabled = true;
+            BtnStopThreading.Enabled = false;
+            MessageBox.Show(
+                "Monitoring kartu dihentikan!",
+                "Info",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void BtnStartThreading_Click(object sender, EventArgs e)
+        {
+            if (cts == null || cts.IsCancellationRequested)
+            {
+                StartCardMonitoringAsync();
+                BtnStartThreading.Enabled = false;
+                BtnStopThreading.Enabled = true;
+                BtnStartTimer.Enabled = false;
+                BtnStopTimer.Enabled = false;
+            }
+        }
+
+        private void BtnStopThreading_Click(object sender, EventArgs e)
+        {
+            if (cts != null)
+            {
+                cts.Cancel();
+                BtnStartThreading.Enabled = true;
+                BtnStopThreading.Enabled = false;
+                BtnStartTimer.Enabled = true;
+                BtnStopTimer.Enabled = false;
+            }
+        }
+
+        private void cardTimer_Tick(object sender, EventArgs e)
+        {
+            CheckCardStatus(sender, e);
+        }
+
         private void UpdateLabelVisibility()
         {
             if (ProfilePict.Image != null)
@@ -818,7 +979,11 @@ namespace ProfileCard
         {
             using Bitmap resizedImage = new Bitmap(image, new Size(width, height));
             using MemoryStream ms = new MemoryStream();
-            ImageCodecInfo jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+            ImageCodecInfo? jpgEncoder = GetEncoder(ImageFormat.Jpeg);
+            if (jpgEncoder == null)
+            {
+                throw new InvalidOperationException("JPEG encoder not found.");
+            }
             EncoderParameters encoderParameters = new EncoderParameters(1);
             encoderParameters.Param[0] = new EncoderParameter(
                 System.Drawing.Imaging.Encoder.Quality,
@@ -828,7 +993,7 @@ namespace ProfileCard
             return ms.ToArray();
         }
 
-        private static ImageCodecInfo GetEncoder(ImageFormat format)
+        private static ImageCodecInfo? GetEncoder(ImageFormat format)
         {
             ImageCodecInfo[] codecs = ImageCodecInfo.GetImageDecoders();
             foreach (ImageCodecInfo codec in codecs)
@@ -1051,7 +1216,7 @@ namespace ProfileCard
             }
         }
 
-        private byte[] ReadBlock(int block)
+        private byte[]? ReadBlock(int block)
         {
             if (SECTOR_TRAILERS.Contains(block))
             {
@@ -1319,7 +1484,7 @@ namespace ProfileCard
                             continue;
                         }
 
-                        byte[] blockData = ReadBlock(currentBlock);
+                        byte[]? blockData = ReadBlock(currentBlock);
                         if (blockData != null)
                         {
                             rawData.AddRange(blockData);
@@ -1380,130 +1545,67 @@ namespace ProfileCard
             readerState.RdrCurrState = readerState.RdrEventState;
         }
 
-        private void BtnStartMonitoring_Click(object sender, EventArgs e)
+        private async void StartCardMonitoringAsync()
         {
-            if (cbReader.SelectedItem != null)
-            {
-                selectedReader = cbReader.SelectedItem?.ToString() ?? string.Empty;
-                cardTimer.Start();
-                MessageBox.Show(
-                    "Monitoring kartu dimulai!",
-                    "Info",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
-                );
-            }
-            else
-            {
-                MessageBox.Show(
-                    "Pilih reader terlebih dahulu!",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
-            }
-        }
+            cts = new CancellationTokenSource();
+            string readerName = cbReader.Text;
 
-        private void BtnStopMonitoring_Click(object sender, EventArgs e)
-        {
-            cardTimer.Stop();
-            MessageBox.Show(
-                "Monitoring kartu dihentikan!",
-                "Info",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
-        }
-
-        private void cardTimer_Tick(object sender, EventArgs e)
-        {
-            CheckCardStatus(sender, e);
-        }
-
-        private void bInit_Click(object sender, EventArgs e)
-        {
-            string ReaderList = "" + Convert.ToChar(0);
-            int indx;
-            int pcchReaders = 0;
-            string rName = "";
-            hContext = 0;
-            retCode = ModWinsCard.SCardEstablishContext(
-                ModWinsCard.SCARD_SCOPE_USER,
-                0,
-                0,
-                ref hContext
-            );
-
-            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
-            {
-                DisplayOutput(1, retCode, "");
-                return;
-            }
-
-            retCode = ModWinsCard.SCardListReaders(this.hContext, null, null, ref pcchReaders);
-
-            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
-            {
-                DisplayOutput(1, retCode, "");
-                return;
-            }
-
-            EnableButtons();
-
-            byte[] ReadersList = new byte[pcchReaders];
-
-            retCode = ModWinsCard.SCardListReaders(
-                this.hContext,
-                null,
-                ReadersList,
-                ref pcchReaders
-            );
-
-            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
-            {
-                mMsg.Items.Add("SCardListReaders Error: " + ModWinsCard.GetScardErrMsg(retCode));
-                mMsg.SelectedIndex = mMsg.Items.Count - 1;
-                return;
-            }
-            else
-            {
-                DisplayOutput(0, 0, " ");
-            }
-
-            rName = "";
-            indx = 0;
-
-            while (ReadersList[indx] != 0)
-            {
-                while (ReadersList[indx] != 0)
+            await Task.Run(
+                async () =>
                 {
-                    rName = rName + (char)ReadersList[indx];
-                    indx = indx + 1;
-                }
+                    SCARD_READERSTATE readerState = new SCARD_READERSTATE
+                    {
+                        RdrName = readerName,
+                        RdrCurrState = ModWinsCard.SCARD_STATE_EMPTY,
+                    };
 
-                cbReader.Items.Add(rName);
-                rName = "";
-                indx = indx + 1;
-            }
+                    while (!cts.Token.IsCancellationRequested)
+                    {
+                        int status = ModWinsCard.SCardGetStatusChange(
+                            hContext,
+                            1000,
+                            ref readerState,
+                            1
+                        );
 
-            if (cbReader.Items.Count > 0)
-            {
-                cbReader.SelectedIndex = 0;
-            }
+                        if (status == ModWinsCard.SCARD_S_SUCCESS)
+                        {
+                            if (
+                                (readerState.RdrEventState & ModWinsCard.SCARD_STATE_PRESENT)
+                                    == ModWinsCard.SCARD_STATE_PRESENT
+                                && (readerState.RdrCurrState & ModWinsCard.SCARD_STATE_PRESENT) == 0
+                            )
+                            {
+                                readerState.RdrCurrState = ModWinsCard.SCARD_STATE_PRESENT;
 
-            indx = 1;
+                                if (InvokeRequired)
+                                {
+                                    BeginInvoke(
+                                        new Action(() =>
+                                        {
+                                            TapReadProfile();
+                                            StopCardMonitoring();
+                                        })
+                                    );
+                                }
+                                else
+                                {
+                                    TapReadProfile();
+                                    StopCardMonitoring();
+                                }
+                            }
+                        }
 
-            for (indx = 1; indx <= cbReader.Items.Count - 1; indx++)
-            {
-                cbReader.SelectedIndex = indx;
+                        await Task.Delay(500);
+                    }
+                },
+                cts.Token
+            );
+        }
 
-                if (cbReader.Text == "ACS ACR128U PICC Interface 0")
-                {
-                    cbReader.SelectedIndex = 1;
-                    return;
-                }
-            }
-            return;
+        private void StopCardMonitoring()
+        {
+            cts?.Cancel();
         }
     }
 }

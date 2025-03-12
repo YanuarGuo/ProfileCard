@@ -45,12 +45,15 @@
             label6 = new Label();
             BtnRead = new Button();
             GBoxConnectReader = new GroupBox();
+            bInit = new Button();
             btnGetUID = new Button();
             bConnect = new Button();
             GBoxTapReader = new GroupBox();
             label8 = new Label();
-            BtnStartMonitoring = new Button();
-            BtnStopMonitoring = new Button();
+            BtnStartThreading = new Button();
+            BtnStopThreading = new Button();
+            BtnStartTimer = new Button();
+            BtnStopTimer = new Button();
             cbReader = new ComboBox();
             label7 = new Label();
             mMsg = new ListBox();
@@ -60,7 +63,8 @@
             BtnReadProfile = new Button();
             BtnResetDataBlock = new Button();
             cardTimer = new System.Windows.Forms.Timer(components);
-            bInit = new Button();
+            label9 = new Label();
+            label10 = new Label();
             ((System.ComponentModel.ISupportInitialize)ProfilePict).BeginInit();
             GBoxConnectReader.SuspendLayout();
             GBoxTapReader.SuspendLayout();
@@ -221,6 +225,17 @@
             GBoxConnectReader.TabStop = false;
             GBoxConnectReader.Text = "Reader's Connection";
             // 
+            // bInit
+            // 
+            bInit.BackColor = SystemColors.ButtonHighlight;
+            bInit.Location = new Point(92, 63);
+            bInit.Name = "bInit";
+            bInit.Size = new Size(85, 23);
+            bInit.TabIndex = 27;
+            bInit.Text = "Initialize";
+            bInit.UseVisualStyleBackColor = false;
+            bInit.Click += bInit_Click;
+            // 
             // btnGetUID
             // 
             btnGetUID.BackColor = SystemColors.ButtonHighlight;
@@ -245,12 +260,16 @@
             // 
             // GBoxTapReader
             // 
+            GBoxTapReader.Controls.Add(label10);
+            GBoxTapReader.Controls.Add(label9);
             GBoxTapReader.Controls.Add(label8);
-            GBoxTapReader.Controls.Add(BtnStartMonitoring);
-            GBoxTapReader.Controls.Add(BtnStopMonitoring);
-            GBoxTapReader.Location = new Point(383, 15);
+            GBoxTapReader.Controls.Add(BtnStartThreading);
+            GBoxTapReader.Controls.Add(BtnStopThreading);
+            GBoxTapReader.Controls.Add(BtnStartTimer);
+            GBoxTapReader.Controls.Add(BtnStopTimer);
+            GBoxTapReader.Location = new Point(374, 15);
             GBoxTapReader.Name = "GBoxTapReader";
-            GBoxTapReader.Size = new Size(190, 89);
+            GBoxTapReader.Size = new Size(396, 89);
             GBoxTapReader.TabIndex = 26;
             GBoxTapReader.TabStop = false;
             GBoxTapReader.Text = "Tap Reader";
@@ -259,33 +278,55 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Segoe UI", 8.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            label8.Location = new Point(26, 22);
+            label8.Location = new Point(62, 24);
             label8.Name = "label8";
-            label8.Size = new Size(139, 13);
+            label8.Size = new Size(272, 13);
             label8.TabIndex = 23;
-            label8.Text = "Tap your card on the reader";
+            label8.Text = "Tap your card on the reader once you have pressed Start";
             // 
-            // BtnStartMonitoring
+            // BtnStartThreading
             // 
-            BtnStartMonitoring.BackColor = SystemColors.ButtonHighlight;
-            BtnStartMonitoring.Location = new Point(97, 48);
-            BtnStartMonitoring.Name = "BtnStartMonitoring";
-            BtnStartMonitoring.Size = new Size(85, 23);
-            BtnStartMonitoring.TabIndex = 21;
-            BtnStartMonitoring.Text = "Start";
-            BtnStartMonitoring.UseVisualStyleBackColor = false;
-            BtnStartMonitoring.Click += BtnStartMonitoring_Click;
+            BtnStartThreading.BackColor = SystemColors.ButtonHighlight;
+            BtnStartThreading.Location = new Point(302, 48);
+            BtnStartThreading.Name = "BtnStartThreading";
+            BtnStartThreading.Size = new Size(85, 23);
+            BtnStartThreading.TabIndex = 21;
+            BtnStartThreading.Text = "Start";
+            BtnStartThreading.UseVisualStyleBackColor = false;
+            BtnStartThreading.Click += BtnStartThreading_Click;
             // 
-            // BtnStopMonitoring
+            // BtnStopThreading
             // 
-            BtnStopMonitoring.BackColor = SystemColors.ButtonHighlight;
-            BtnStopMonitoring.Location = new Point(6, 48);
-            BtnStopMonitoring.Name = "BtnStopMonitoring";
-            BtnStopMonitoring.Size = new Size(85, 23);
-            BtnStopMonitoring.TabIndex = 22;
-            BtnStopMonitoring.Text = "Stop";
-            BtnStopMonitoring.UseVisualStyleBackColor = false;
-            BtnStopMonitoring.Click += BtnStopMonitoring_Click;
+            BtnStopThreading.BackColor = SystemColors.ButtonHighlight;
+            BtnStopThreading.Location = new Point(211, 48);
+            BtnStopThreading.Name = "BtnStopThreading";
+            BtnStopThreading.Size = new Size(85, 23);
+            BtnStopThreading.TabIndex = 22;
+            BtnStopThreading.Text = "Stop";
+            BtnStopThreading.UseVisualStyleBackColor = false;
+            BtnStopThreading.Click += BtnStopThreading_Click;
+            // 
+            // BtnStartTimer
+            // 
+            BtnStartTimer.BackColor = SystemColors.ButtonHighlight;
+            BtnStartTimer.Location = new Point(99, 48);
+            BtnStartTimer.Name = "BtnStartTimer";
+            BtnStartTimer.Size = new Size(85, 23);
+            BtnStartTimer.TabIndex = 21;
+            BtnStartTimer.Text = "Start";
+            BtnStartTimer.UseVisualStyleBackColor = false;
+            BtnStartTimer.Click += BtnStartTimer_Click;
+            // 
+            // BtnStopTimer
+            // 
+            BtnStopTimer.BackColor = SystemColors.ButtonHighlight;
+            BtnStopTimer.Location = new Point(8, 48);
+            BtnStopTimer.Name = "BtnStopTimer";
+            BtnStopTimer.Size = new Size(85, 23);
+            BtnStopTimer.TabIndex = 22;
+            BtnStopTimer.Text = "Stop";
+            BtnStopTimer.UseVisualStyleBackColor = false;
+            BtnStopTimer.Click += BtnStopTimer_Click;
             // 
             // cbReader
             // 
@@ -370,22 +411,31 @@
             // 
             cardTimer.Tick += cardTimer_Tick;
             // 
-            // bInit
+            // label9
             // 
-            bInit.BackColor = SystemColors.ButtonHighlight;
-            bInit.Location = new Point(92, 63);
-            bInit.Name = "bInit";
-            bInit.Size = new Size(85, 23);
-            bInit.TabIndex = 27;
-            bInit.Text = "Initialize";
-            bInit.UseVisualStyleBackColor = false;
-            bInit.Click += bInit_Click;
+            label9.AutoSize = true;
+            label9.Font = new Font("Segoe UI", 8.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            label9.Location = new Point(78, 73);
+            label9.Name = "label9";
+            label9.Size = new Size(34, 13);
+            label9.TabIndex = 24;
+            label9.Text = "Timer";
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Font = new Font("Segoe UI", 8.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            label10.Location = new Point(279, 73);
+            label10.Name = "label10";
+            label10.Size = new Size(40, 13);
+            label10.TabIndex = 25;
+            label10.Text = "Thread";
             // 
             // ProfileCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1195, 425);
+            ClientSize = new Size(1196, 425);
             Controls.Add(BtnResetDataBlock);
             Controls.Add(BtnReadProfile);
             Controls.Add(dReadAll);
@@ -450,10 +500,14 @@
         private Button BtnReadProfile;
         private Button BtnResetDataBlock;
         private System.Windows.Forms.Timer cardTimer;
-        private Button BtnStopMonitoring;
-        private Button BtnStartMonitoring;
+        private Button BtnStopTimer;
+        private Button BtnStartTimer;
         private GroupBox GBoxTapReader;
         private Label label8;
         private Button bInit;
+        private Button BtnStartThreading;
+        private Button BtnStopThreading;
+        private Label label10;
+        private Label label9;
     }
 }
