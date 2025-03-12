@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Diagnostics;
+using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Timers;
 using System.Windows.Forms;
 using System.Xml.Linq;
 using static System.Net.Mime.MediaTypeNames;
@@ -83,6 +86,8 @@ namespace ProfileCard
             239,
             255,
         };
+        private string selectedReader = string.Empty;
+        private bool isCardPresent = false;
 
         public ProfileCard()
         {
@@ -93,6 +98,9 @@ namespace ProfileCard
         {
             InitMenu();
             InitCard();
+            System.Windows.Forms.Timer cardTimer;
+            cardTimer = new System.Windows.Forms.Timer { Interval = 1000 };
+            cardTimer.Tick += CheckCardStatus;
         }
 
         private void InitMenu()
@@ -1208,6 +1216,294 @@ namespace ProfileCard
             RecvLen = 2;
 
             return SendAPDUandDisplay(2) == ModWinsCard.SCARD_S_SUCCESS;
+        }
+
+        private void TapReadProfile()
+        {
+            List<byte> rawData = new List<byte>();
+            int[] sectorSizes =
+            {
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                4,
+                16,
+                16,
+                16,
+                16,
+                16,
+                16,
+                16,
+                16,
+            };
+            int startSector = 2;
+            int startBlock = 8;
+            int blockIndex = 4;
+
+            if (connActive)
+            {
+                retCode = ModWinsCard.SCardDisconnect(hCard, ModWinsCard.SCARD_UNPOWER_CARD);
+            }
+
+            retCode = ModWinsCard.SCardConnect(
+                hContext,
+                cbReader.Text,
+                ModWinsCard.SCARD_SHARE_SHARED,
+                1 | 2,
+                ref hCard,
+                ref Protocol
+            );
+
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                return;
+            }
+
+            connActive = true;
+
+            try
+            {
+                for (int sector = 1; sector < startSector; sector++)
+                {
+                    blockIndex += sectorSizes[sector];
+                }
+
+                for (int sector = startSector; sector < sectorSizes.Length; sector++)
+                {
+                    int blocksInSector = sectorSizes[sector];
+
+                    int trailerBlock = blockIndex + blocksInSector - 1;
+                    if (!Authenticate(trailerBlock))
+                    {
+                        return;
+                    }
+
+                    for (
+                        int i = (sector == startSector ? startBlock - blockIndex : 0);
+                        i < blocksInSector - 1;
+                        i++
+                    )
+                    {
+                        int currentBlock = blockIndex + i;
+
+                        if (SECTOR_TRAILERS.Contains(currentBlock))
+                        {
+                            continue;
+                        }
+
+                        byte[] blockData = ReadBlock(currentBlock);
+                        if (blockData != null)
+                        {
+                            rawData.AddRange(blockData);
+                        }
+                        else
+                        {
+                            MessageBox.Show(
+                                $"Gagal membaca blok {currentBlock}!",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error
+                            );
+                            return;
+                        }
+                    }
+
+                    blockIndex += blocksInSector;
+                }
+
+                ParseProfileData(rawData.ToArray());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Terjadi kesalahan: {ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+        private void CheckCardStatus(object? sender, EventArgs e)
+        {
+            ModWinsCard.SCARD_READERSTATE readerState = new ModWinsCard.SCARD_READERSTATE();
+            readerState.RdrName = selectedReader;
+            readerState.RdrCurrState = ModWinsCard.SCARD_STATE_EMPTY;
+
+            retCode = ModWinsCard.SCardGetStatusChange(hContext, 0, ref readerState, 1);
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                Console.WriteLine("[Error] SCardGetStatusChange failed.");
+                return;
+            }
+
+            bool cardDetected = (readerState.RdrEventState & ModWinsCard.SCARD_STATE_PRESENT) != 0;
+
+            if (cardDetected && !isCardPresent)
+            {
+                isCardPresent = true;
+                TapReadProfile();
+            }
+            else if (!cardDetected)
+            {
+                isCardPresent = false;
+            }
+
+            readerState.RdrCurrState = readerState.RdrEventState;
+        }
+
+        private void BtnStartMonitoring_Click(object sender, EventArgs e)
+        {
+            if (cbReader.SelectedItem != null)
+            {
+                selectedReader = cbReader.SelectedItem?.ToString() ?? string.Empty;
+                cardTimer.Start();
+                MessageBox.Show(
+                    "Monitoring kartu dimulai!",
+                    "Info",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+            }
+            else
+            {
+                MessageBox.Show(
+                    "Pilih reader terlebih dahulu!",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
+        private void BtnStopMonitoring_Click(object sender, EventArgs e)
+        {
+            cardTimer.Stop();
+            MessageBox.Show(
+                "Monitoring kartu dihentikan!",
+                "Info",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information
+            );
+        }
+
+        private void cardTimer_Tick(object sender, EventArgs e)
+        {
+            CheckCardStatus(sender, e);
+        }
+
+        private void bInit_Click(object sender, EventArgs e)
+        {
+            string ReaderList = "" + Convert.ToChar(0);
+            int indx;
+            int pcchReaders = 0;
+            string rName = "";
+            hContext = 0;
+            retCode = ModWinsCard.SCardEstablishContext(
+                ModWinsCard.SCARD_SCOPE_USER,
+                0,
+                0,
+                ref hContext
+            );
+
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                DisplayOutput(1, retCode, "");
+                return;
+            }
+
+            retCode = ModWinsCard.SCardListReaders(this.hContext, null, null, ref pcchReaders);
+
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                DisplayOutput(1, retCode, "");
+                return;
+            }
+
+            EnableButtons();
+
+            byte[] ReadersList = new byte[pcchReaders];
+
+            retCode = ModWinsCard.SCardListReaders(
+                this.hContext,
+                null,
+                ReadersList,
+                ref pcchReaders
+            );
+
+            if (retCode != ModWinsCard.SCARD_S_SUCCESS)
+            {
+                mMsg.Items.Add("SCardListReaders Error: " + ModWinsCard.GetScardErrMsg(retCode));
+                mMsg.SelectedIndex = mMsg.Items.Count - 1;
+                return;
+            }
+            else
+            {
+                DisplayOutput(0, 0, " ");
+            }
+
+            rName = "";
+            indx = 0;
+
+            while (ReadersList[indx] != 0)
+            {
+                while (ReadersList[indx] != 0)
+                {
+                    rName = rName + (char)ReadersList[indx];
+                    indx = indx + 1;
+                }
+
+                cbReader.Items.Add(rName);
+                rName = "";
+                indx = indx + 1;
+            }
+
+            if (cbReader.Items.Count > 0)
+            {
+                cbReader.SelectedIndex = 0;
+            }
+
+            indx = 1;
+
+            for (indx = 1; indx <= cbReader.Items.Count - 1; indx++)
+            {
+                cbReader.SelectedIndex = indx;
+
+                if (cbReader.Text == "ACS ACR128U PICC Interface 0")
+                {
+                    cbReader.SelectedIndex = 1;
+                    return;
+                }
+            }
+            return;
         }
     }
 }
