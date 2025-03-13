@@ -49,6 +49,8 @@
             btnGetUID = new Button();
             bConnect = new Button();
             GBoxTapReader = new GroupBox();
+            label10 = new Label();
+            label9 = new Label();
             label8 = new Label();
             BtnStartThreading = new Button();
             BtnStopThreading = new Button();
@@ -63,8 +65,8 @@
             BtnReadProfile = new Button();
             BtnResetDataBlock = new Button();
             cardTimer = new System.Windows.Forms.Timer(components);
-            label9 = new Label();
-            label10 = new Label();
+            label11 = new Label();
+            TxtID = new TextBox();
             ((System.ComponentModel.ISupportInitialize)ProfilePict).BeginInit();
             GBoxConnectReader.SuspendLayout();
             GBoxTapReader.SuspendLayout();
@@ -74,7 +76,7 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Location = new Point(12, 181);
+            label1.Location = new Point(12, 191);
             label1.Name = "label1";
             label1.Size = new Size(61, 15);
             label1.TabIndex = 0;
@@ -93,7 +95,7 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Location = new Point(12, 239);
+            label2.Location = new Point(12, 278);
             label2.Name = "label2";
             label2.Size = new Size(45, 15);
             label2.TabIndex = 2;
@@ -102,7 +104,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Location = new Point(12, 210);
+            label3.Location = new Point(12, 249);
             label3.Name = "label3";
             label3.Size = new Size(73, 15);
             label3.TabIndex = 3;
@@ -111,7 +113,7 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Location = new Point(12, 269);
+            label4.Location = new Point(12, 308);
             label4.Name = "label4";
             label4.Size = new Size(49, 15);
             label4.TabIndex = 4;
@@ -120,7 +122,7 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Location = new Point(12, 339);
+            label5.Location = new Point(12, 378);
             label5.Name = "label5";
             label5.Size = new Size(96, 15);
             label5.TabIndex = 5;
@@ -128,7 +130,7 @@
             // 
             // TxtName
             // 
-            TxtName.Location = new Point(125, 178);
+            TxtName.Location = new Point(125, 188);
             TxtName.MaxLength = 255;
             TxtName.Name = "TxtName";
             TxtName.Size = new Size(258, 23);
@@ -136,7 +138,7 @@
             // 
             // TxtBirthDate
             // 
-            TxtBirthDate.Location = new Point(125, 207);
+            TxtBirthDate.Location = new Point(125, 246);
             TxtBirthDate.MaxLength = 50;
             TxtBirthDate.Name = "TxtBirthDate";
             TxtBirthDate.Size = new Size(258, 23);
@@ -144,7 +146,7 @@
             // 
             // TxtGender
             // 
-            TxtGender.Location = new Point(125, 236);
+            TxtGender.Location = new Point(125, 275);
             TxtGender.MaxLength = 10;
             TxtGender.Name = "TxtGender";
             TxtGender.Size = new Size(258, 23);
@@ -152,7 +154,7 @@
             // 
             // TxtAddress
             // 
-            TxtAddress.Location = new Point(125, 265);
+            TxtAddress.Location = new Point(125, 304);
             TxtAddress.MaxLength = 255;
             TxtAddress.Multiline = true;
             TxtAddress.Name = "TxtAddress";
@@ -161,7 +163,7 @@
             // 
             // TxtNumber
             // 
-            TxtNumber.Location = new Point(125, 337);
+            TxtNumber.Location = new Point(125, 376);
             TxtNumber.MaxLength = 15;
             TxtNumber.Name = "TxtNumber";
             TxtNumber.Size = new Size(258, 23);
@@ -170,7 +172,7 @@
             // BtnConfirm
             // 
             BtnConfirm.BackColor = SystemColors.ButtonHighlight;
-            BtnConfirm.Location = new Point(298, 382);
+            BtnConfirm.Location = new Point(298, 421);
             BtnConfirm.Name = "BtnConfirm";
             BtnConfirm.Size = new Size(85, 23);
             BtnConfirm.TabIndex = 11;
@@ -181,7 +183,7 @@
             // BtnReset
             // 
             BtnReset.BackColor = SystemColors.ButtonHighlight;
-            BtnReset.Location = new Point(116, 382);
+            BtnReset.Location = new Point(116, 421);
             BtnReset.Name = "BtnReset";
             BtnReset.Size = new Size(85, 23);
             BtnReset.TabIndex = 12;
@@ -202,7 +204,7 @@
             // BtnRead
             // 
             BtnRead.BackColor = SystemColors.ButtonHighlight;
-            BtnRead.Location = new Point(1072, 382);
+            BtnRead.Location = new Point(1072, 421);
             BtnRead.Name = "BtnRead";
             BtnRead.Size = new Size(107, 23);
             BtnRead.TabIndex = 14;
@@ -273,6 +275,26 @@
             GBoxTapReader.TabIndex = 26;
             GBoxTapReader.TabStop = false;
             GBoxTapReader.Text = "Tap Reader";
+            // 
+            // label10
+            // 
+            label10.AutoSize = true;
+            label10.Font = new Font("Segoe UI", 8.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            label10.Location = new Point(279, 73);
+            label10.Name = "label10";
+            label10.Size = new Size(40, 13);
+            label10.TabIndex = 25;
+            label10.Text = "Thread";
+            // 
+            // label9
+            // 
+            label9.AutoSize = true;
+            label9.Font = new Font("Segoe UI", 8.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            label9.Location = new Point(78, 73);
+            label9.Name = "label9";
+            label9.Size = new Size(34, 13);
+            label9.TabIndex = 24;
+            label9.Text = "Timer";
             // 
             // label8
             // 
@@ -351,13 +373,13 @@
             mMsg.ItemHeight = 15;
             mMsg.Location = new Point(403, 131);
             mMsg.Name = "mMsg";
-            mMsg.Size = new Size(304, 229);
+            mMsg.Size = new Size(304, 274);
             mMsg.TabIndex = 18;
             // 
             // bReset
             // 
             bReset.BackColor = SystemColors.ButtonHighlight;
-            bReset.Location = new Point(622, 381);
+            bReset.Location = new Point(622, 421);
             bReset.Name = "bReset";
             bReset.Size = new Size(85, 23);
             bReset.TabIndex = 21;
@@ -368,7 +390,7 @@
             // bClear
             // 
             bClear.BackColor = SystemColors.ButtonHighlight;
-            bClear.Location = new Point(531, 381);
+            bClear.Location = new Point(531, 421);
             bClear.Name = "bClear";
             bClear.Size = new Size(85, 23);
             bClear.TabIndex = 22;
@@ -382,13 +404,13 @@
             dReadAll.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dReadAll.Location = new Point(719, 131);
             dReadAll.Name = "dReadAll";
-            dReadAll.Size = new Size(460, 229);
+            dReadAll.Size = new Size(460, 274);
             dReadAll.TabIndex = 23;
             // 
             // BtnReadProfile
             // 
             BtnReadProfile.BackColor = SystemColors.ButtonHighlight;
-            BtnReadProfile.Location = new Point(207, 382);
+            BtnReadProfile.Location = new Point(207, 421);
             BtnReadProfile.Name = "BtnReadProfile";
             BtnReadProfile.Size = new Size(85, 23);
             BtnReadProfile.TabIndex = 24;
@@ -399,7 +421,7 @@
             // BtnResetDataBlock
             // 
             BtnResetDataBlock.BackColor = SystemColors.ButtonHighlight;
-            BtnResetDataBlock.Location = new Point(959, 382);
+            BtnResetDataBlock.Location = new Point(959, 421);
             BtnResetDataBlock.Name = "BtnResetDataBlock";
             BtnResetDataBlock.Size = new Size(107, 23);
             BtnResetDataBlock.TabIndex = 25;
@@ -411,31 +433,30 @@
             // 
             cardTimer.Tick += cardTimer_Tick;
             // 
-            // label9
+            // label11
             // 
-            label9.AutoSize = true;
-            label9.Font = new Font("Segoe UI", 8.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            label9.Location = new Point(78, 73);
-            label9.Name = "label9";
-            label9.Size = new Size(34, 13);
-            label9.TabIndex = 24;
-            label9.Text = "Timer";
+            label11.AutoSize = true;
+            label11.Location = new Point(12, 220);
+            label11.Name = "label11";
+            label11.Size = new Size(73, 15);
+            label11.TabIndex = 26;
+            label11.Text = "Employee ID";
             // 
-            // label10
+            // TxtID
             // 
-            label10.AutoSize = true;
-            label10.Font = new Font("Segoe UI", 8.25F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            label10.Location = new Point(279, 73);
-            label10.Name = "label10";
-            label10.Size = new Size(40, 13);
-            label10.TabIndex = 25;
-            label10.Text = "Thread";
+            TxtID.Location = new Point(125, 217);
+            TxtID.MaxLength = 255;
+            TxtID.Name = "TxtID";
+            TxtID.Size = new Size(258, 23);
+            TxtID.TabIndex = 27;
             // 
             // ProfileCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1196, 425);
+            ClientSize = new Size(1196, 483);
+            Controls.Add(TxtID);
+            Controls.Add(label11);
             Controls.Add(BtnResetDataBlock);
             Controls.Add(BtnReadProfile);
             Controls.Add(dReadAll);
@@ -509,5 +530,7 @@
         private Button BtnStopThreading;
         private Label label10;
         private Label label9;
+        private Label label11;
+        private TextBox TxtID;
     }
 }

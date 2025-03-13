@@ -16,6 +16,7 @@ using System.Text.RegularExpressions;
 using System.Timers;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using Npgsql;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static ModWinsCard;
@@ -93,13 +94,14 @@ namespace ProfileCard
         public ProfileCard()
         {
             InitializeComponent();
+            TestDatabaseConnection();
         }
 
         private void ProfileCard_Load(object sender, EventArgs e)
         {
             InitMenu();
             InitCard();
-            // !! Uncomment line below if you want to start card monitoring automatically !!
+            // !! Uncomment a line below if you want to start card monitoring automatically !!
             StartCardMonitoringAsync();
             System.Windows.Forms.Timer cardTimer;
             cardTimer = new System.Windows.Forms.Timer { Interval = 1000 };
@@ -140,6 +142,7 @@ namespace ProfileCard
 
         private void BtnReset_Click(object sender, EventArgs e)
         {
+            TxtID.Text = "";
             TxtAddress.Text = "";
             TxtBirthDate.Text = "";
             TxtGender.Text = "";
@@ -778,6 +781,7 @@ namespace ProfileCard
 
         private string EncodeProfileData()
         {
+            string id = TxtID.Text.Trim();
             string name = TxtName.Text.Trim();
             string dob = TxtBirthDate.Text.Trim();
             string gender = TxtGender.Text.Trim();
@@ -789,14 +793,14 @@ namespace ProfileCard
             {
                 compressedImage = CompressImage(ProfilePict.Image, 40, 60, 95);
             }
-
+            string hexID = ConvertStringToHexWithHeader("*", id);
             string hexName = ConvertStringToHexWithHeader("*", name);
             string hexDOB = ConvertStringToHexWithHeader("*", dob);
             string hexGender = ConvertStringToHexWithHeader("*", gender);
             string hexAddress = ConvertStringToHexWithHeader("*", address);
             string hexPhone = ConvertStringToHexWithHeader("*", phone);
 
-            string hexTextData = $"{hexName}{hexDOB}{hexGender}{hexAddress}{hexPhone}";
+            string hexTextData = $"{hexID}{hexName}{hexDOB}{hexGender}{hexAddress}{hexPhone}";
 
             byte[] textBytes = Enumerable
                 .Range(0, hexTextData.Length / 2)
@@ -1278,13 +1282,14 @@ namespace ProfileCard
                     parts = [.. parts.Skip(1)];
                 }
 
-                if (parts.Length >= 5)
+                if (parts.Length >= 6)
                 {
-                    TxtName.Text = parts[0];
-                    TxtBirthDate.Text = parts[1];
-                    TxtGender.Text = parts[2];
-                    TxtAddress.Text = parts[3];
-                    TxtNumber.Text = parts[4];
+                    TxtID.Text = parts[0];
+                    TxtName.Text = parts[1];
+                    TxtBirthDate.Text = parts[2];
+                    TxtGender.Text = parts[3];
+                    TxtAddress.Text = parts[4];
+                    TxtNumber.Text = parts[5];
                 }
                 else
                 {
@@ -1315,12 +1320,12 @@ namespace ProfileCard
                     ProfilePict.SizeMode = PictureBoxSizeMode.StretchImage;
                     UpdateLabelVisibility();
 
-                    string userInputName = TxtName.Text;
-
-                    string basePath = $"D:\\{userInputName}.jpg";
-                    string outputPath = GetUniqueFilePath(basePath);
-                    ProfilePict.Image.Save(outputPath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                    Debug.WriteLine($"Gambar berhasil disimpan di {outputPath}");
+                    // !! Uncomment lines below if you want to save image !!
+                    //string userInputName = TxtName.Text;
+                    //string basePath = $"D:\\{userInputName}.jpg";
+                    //string outputPath = GetUniqueFilePath(basePath);
+                    //ProfilePict.Image.Save(outputPath, System.Drawing.Imaging.ImageFormat.Jpeg);
+                    //Debug.WriteLine($"Gambar berhasil disimpan di {outputPath}");
                 }
                 catch (Exception imgEx)
                 {
@@ -1606,6 +1611,35 @@ namespace ProfileCard
         private void StopCardMonitoring()
         {
             cts?.Cancel();
+        }
+
+        private void TestDatabaseConnection()
+        {
+            string connString =
+                "Server=localhost;Port=5432;User Id=postgres;Password=1sampai8;Database=postgres";
+
+            try
+            {
+                using (var conn = new NpgsqlConnection(connString))
+                {
+                    conn.Open();
+                    MessageBox.Show(
+                        "Connected to PostgreSQL successfully!",
+                        "Success",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information
+                    );
+                } // Connection is automatically closed when leaving the 'using' block.
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Database connection failed: {ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
         }
     }
 }
