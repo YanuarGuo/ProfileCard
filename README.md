@@ -19,7 +19,8 @@ A **desktop application** built using **C# and .NET** that allows users to gener
 
 ## Prerequisites
 - **.NET 8.0 or later**  
-- A **PC/SC-compatible** smart card reader (e.g., **OMNIKEY CardMan 5x21-CL**)  
+- A **PC/SC-compatible** smart card reader (e.g., **OMNIKEY CardMan 5x21**)
+- A smart card (e.g., **MIFARE Classic EV1 4K**)
 
 ## Installation
 1. **Clone this repository**:  
