@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProfileCard));
             label1 = new Label();
             ProfilePict = new PictureBox();
             label2 = new Label();
@@ -36,8 +37,6 @@
             label4 = new Label();
             label5 = new Label();
             TxtName = new TextBox();
-            TxtBirthDate = new TextBox();
-            TxtGender = new TextBox();
             TxtAddress = new TextBox();
             TxtNumber = new TextBox();
             BtnConfirm = new Button();
@@ -45,9 +44,9 @@
             label6 = new Label();
             BtnRead = new Button();
             GBoxConnectReader = new GroupBox();
-            bInit = new Button();
-            btnGetUID = new Button();
-            bConnect = new Button();
+            BtnInitialize = new Button();
+            BtnGetUID = new Button();
+            BtnConnect = new Button();
             GBoxTapReader = new GroupBox();
             label10 = new Label();
             label9 = new Label();
@@ -59,14 +58,16 @@
             cbReader = new ComboBox();
             label7 = new Label();
             mMsg = new ListBox();
-            bReset = new Button();
-            bClear = new Button();
+            BtnResetReader = new Button();
+            BtnClear = new Button();
             dReadAll = new DataGridView();
             BtnReadProfile = new Button();
             BtnResetDataBlock = new Button();
-            cardTimer = new System.Windows.Forms.Timer(components);
+            CardTimer = new System.Windows.Forms.Timer(components);
             label11 = new Label();
             TxtID = new TextBox();
+            DtBirth = new DateTimePicker();
+            CbGender = new ComboBox();
             ((System.ComponentModel.ISupportInitialize)ProfilePict).BeginInit();
             GBoxConnectReader.SuspendLayout();
             GBoxTapReader.SuspendLayout();
@@ -134,23 +135,7 @@
             TxtName.MaxLength = 255;
             TxtName.Name = "TxtName";
             TxtName.Size = new Size(258, 23);
-            TxtName.TabIndex = 6;
-            // 
-            // TxtBirthDate
-            // 
-            TxtBirthDate.Location = new Point(125, 246);
-            TxtBirthDate.MaxLength = 50;
-            TxtBirthDate.Name = "TxtBirthDate";
-            TxtBirthDate.Size = new Size(258, 23);
-            TxtBirthDate.TabIndex = 7;
-            // 
-            // TxtGender
-            // 
-            TxtGender.Location = new Point(125, 275);
-            TxtGender.MaxLength = 10;
-            TxtGender.Name = "TxtGender";
-            TxtGender.Size = new Size(258, 23);
-            TxtGender.TabIndex = 8;
+            TxtName.TabIndex = 1;
             // 
             // TxtAddress
             // 
@@ -159,15 +144,15 @@
             TxtAddress.Multiline = true;
             TxtAddress.Name = "TxtAddress";
             TxtAddress.Size = new Size(258, 66);
-            TxtAddress.TabIndex = 9;
+            TxtAddress.TabIndex = 5;
             // 
             // TxtNumber
             // 
             TxtNumber.Location = new Point(125, 376);
-            TxtNumber.MaxLength = 15;
+            TxtNumber.MaxLength = 20;
             TxtNumber.Name = "TxtNumber";
             TxtNumber.Size = new Size(258, 23);
-            TxtNumber.TabIndex = 10;
+            TxtNumber.TabIndex = 6;
             // 
             // BtnConfirm
             // 
@@ -175,7 +160,7 @@
             BtnConfirm.Location = new Point(298, 421);
             BtnConfirm.Name = "BtnConfirm";
             BtnConfirm.Size = new Size(85, 23);
-            BtnConfirm.TabIndex = 11;
+            BtnConfirm.TabIndex = 7;
             BtnConfirm.Text = "Confirm";
             BtnConfirm.UseVisualStyleBackColor = false;
             BtnConfirm.Click += BtnConfirm_Click;
@@ -186,7 +171,7 @@
             BtnReset.Location = new Point(116, 421);
             BtnReset.Name = "BtnReset";
             BtnReset.Size = new Size(85, 23);
-            BtnReset.TabIndex = 12;
+            BtnReset.TabIndex = 9;
             BtnReset.Text = "Reset";
             BtnReset.UseVisualStyleBackColor = false;
             BtnReset.Click += BtnReset_Click;
@@ -207,16 +192,16 @@
             BtnRead.Location = new Point(1072, 421);
             BtnRead.Name = "BtnRead";
             BtnRead.Size = new Size(107, 23);
-            BtnRead.TabIndex = 14;
+            BtnRead.TabIndex = 13;
             BtnRead.Text = "Read All Block";
             BtnRead.UseVisualStyleBackColor = false;
             BtnRead.Click += BtnRead_Click;
             // 
             // GBoxConnectReader
             // 
-            GBoxConnectReader.Controls.Add(bInit);
-            GBoxConnectReader.Controls.Add(btnGetUID);
-            GBoxConnectReader.Controls.Add(bConnect);
+            GBoxConnectReader.Controls.Add(BtnInitialize);
+            GBoxConnectReader.Controls.Add(BtnGetUID);
+            GBoxConnectReader.Controls.Add(BtnConnect);
             GBoxConnectReader.Controls.Add(GBoxTapReader);
             GBoxConnectReader.Controls.Add(cbReader);
             GBoxConnectReader.Controls.Add(label7);
@@ -227,38 +212,38 @@
             GBoxConnectReader.TabStop = false;
             GBoxConnectReader.Text = "Reader's Connection";
             // 
-            // bInit
+            // BtnInitialize
             // 
-            bInit.BackColor = SystemColors.ButtonHighlight;
-            bInit.Location = new Point(92, 63);
-            bInit.Name = "bInit";
-            bInit.Size = new Size(85, 23);
-            bInit.TabIndex = 27;
-            bInit.Text = "Initialize";
-            bInit.UseVisualStyleBackColor = false;
-            bInit.Click += bInit_Click;
+            BtnInitialize.BackColor = SystemColors.ButtonHighlight;
+            BtnInitialize.Location = new Point(92, 63);
+            BtnInitialize.Name = "BtnInitialize";
+            BtnInitialize.Size = new Size(85, 23);
+            BtnInitialize.TabIndex = 12;
+            BtnInitialize.Text = "Initialize";
+            BtnInitialize.UseVisualStyleBackColor = false;
+            BtnInitialize.Click += BtnInitialize_Click;
             // 
-            // btnGetUID
+            // BtnGetUID
             // 
-            btnGetUID.BackColor = SystemColors.ButtonHighlight;
-            btnGetUID.Location = new Point(183, 63);
-            btnGetUID.Name = "btnGetUID";
-            btnGetUID.Size = new Size(85, 23);
-            btnGetUID.TabIndex = 20;
-            btnGetUID.Text = "Get UID";
-            btnGetUID.UseVisualStyleBackColor = false;
-            btnGetUID.Click += btnGetUID_Click;
+            BtnGetUID.BackColor = SystemColors.ButtonHighlight;
+            BtnGetUID.Location = new Point(183, 63);
+            BtnGetUID.Name = "BtnGetUID";
+            BtnGetUID.Size = new Size(85, 23);
+            BtnGetUID.TabIndex = 11;
+            BtnGetUID.Text = "Get UID";
+            BtnGetUID.UseVisualStyleBackColor = false;
+            BtnGetUID.Click += BtnGetUID_Click;
             // 
-            // bConnect
+            // BtnConnect
             // 
-            bConnect.BackColor = SystemColors.ButtonHighlight;
-            bConnect.Location = new Point(274, 63);
-            bConnect.Name = "bConnect";
-            bConnect.Size = new Size(85, 23);
-            bConnect.TabIndex = 19;
-            bConnect.Text = "Connect";
-            bConnect.UseVisualStyleBackColor = false;
-            bConnect.Click += bConnect_Click;
+            BtnConnect.BackColor = SystemColors.ButtonHighlight;
+            BtnConnect.Location = new Point(274, 63);
+            BtnConnect.Name = "BtnConnect";
+            BtnConnect.Size = new Size(85, 23);
+            BtnConnect.TabIndex = 10;
+            BtnConnect.Text = "Connect";
+            BtnConnect.UseVisualStyleBackColor = false;
+            BtnConnect.Click += BtnConnect_Click;
             // 
             // GBoxTapReader
             // 
@@ -312,7 +297,7 @@
             BtnStartThreading.Location = new Point(302, 48);
             BtnStartThreading.Name = "BtnStartThreading";
             BtnStartThreading.Size = new Size(85, 23);
-            BtnStartThreading.TabIndex = 21;
+            BtnStartThreading.TabIndex = 17;
             BtnStartThreading.Text = "Start";
             BtnStartThreading.UseVisualStyleBackColor = false;
             BtnStartThreading.Click += BtnStartThreading_Click;
@@ -323,7 +308,7 @@
             BtnStopThreading.Location = new Point(211, 48);
             BtnStopThreading.Name = "BtnStopThreading";
             BtnStopThreading.Size = new Size(85, 23);
-            BtnStopThreading.TabIndex = 22;
+            BtnStopThreading.TabIndex = 18;
             BtnStopThreading.Text = "Stop";
             BtnStopThreading.UseVisualStyleBackColor = false;
             BtnStopThreading.Click += BtnStopThreading_Click;
@@ -334,7 +319,7 @@
             BtnStartTimer.Location = new Point(99, 48);
             BtnStartTimer.Name = "BtnStartTimer";
             BtnStartTimer.Size = new Size(85, 23);
-            BtnStartTimer.TabIndex = 21;
+            BtnStartTimer.TabIndex = 19;
             BtnStartTimer.Text = "Start";
             BtnStartTimer.UseVisualStyleBackColor = false;
             BtnStartTimer.Click += BtnStartTimer_Click;
@@ -345,7 +330,7 @@
             BtnStopTimer.Location = new Point(8, 48);
             BtnStopTimer.Name = "BtnStopTimer";
             BtnStopTimer.Size = new Size(85, 23);
-            BtnStopTimer.TabIndex = 22;
+            BtnStopTimer.TabIndex = 20;
             BtnStopTimer.Text = "Stop";
             BtnStopTimer.UseVisualStyleBackColor = false;
             BtnStopTimer.Click += BtnStopTimer_Click;
@@ -376,27 +361,27 @@
             mMsg.Size = new Size(304, 274);
             mMsg.TabIndex = 18;
             // 
-            // bReset
+            // BtnResetReader
             // 
-            bReset.BackColor = SystemColors.ButtonHighlight;
-            bReset.Location = new Point(622, 421);
-            bReset.Name = "bReset";
-            bReset.Size = new Size(85, 23);
-            bReset.TabIndex = 21;
-            bReset.Text = "Reset";
-            bReset.UseVisualStyleBackColor = false;
-            bReset.Click += bReset_Click;
+            BtnResetReader.BackColor = SystemColors.ButtonHighlight;
+            BtnResetReader.Location = new Point(622, 421);
+            BtnResetReader.Name = "BtnResetReader";
+            BtnResetReader.Size = new Size(85, 23);
+            BtnResetReader.TabIndex = 15;
+            BtnResetReader.Text = "Reset";
+            BtnResetReader.UseVisualStyleBackColor = false;
+            BtnResetReader.Click += BtnResetReader_Click;
             // 
-            // bClear
+            // BtnClear
             // 
-            bClear.BackColor = SystemColors.ButtonHighlight;
-            bClear.Location = new Point(531, 421);
-            bClear.Name = "bClear";
-            bClear.Size = new Size(85, 23);
-            bClear.TabIndex = 22;
-            bClear.Text = "Clear";
-            bClear.UseVisualStyleBackColor = false;
-            bClear.Click += bClear_Click;
+            BtnClear.BackColor = SystemColors.ButtonHighlight;
+            BtnClear.Location = new Point(531, 421);
+            BtnClear.Name = "BtnClear";
+            BtnClear.Size = new Size(85, 23);
+            BtnClear.TabIndex = 16;
+            BtnClear.Text = "Clear";
+            BtnClear.UseVisualStyleBackColor = false;
+            BtnClear.Click += BtnClear_Click;
             // 
             // dReadAll
             // 
@@ -413,7 +398,7 @@
             BtnReadProfile.Location = new Point(207, 421);
             BtnReadProfile.Name = "BtnReadProfile";
             BtnReadProfile.Size = new Size(85, 23);
-            BtnReadProfile.TabIndex = 24;
+            BtnReadProfile.TabIndex = 8;
             BtnReadProfile.Text = "Read Profile";
             BtnReadProfile.UseVisualStyleBackColor = false;
             BtnReadProfile.Click += BtnReadProfile_Click;
@@ -424,14 +409,14 @@
             BtnResetDataBlock.Location = new Point(959, 421);
             BtnResetDataBlock.Name = "BtnResetDataBlock";
             BtnResetDataBlock.Size = new Size(107, 23);
-            BtnResetDataBlock.TabIndex = 25;
+            BtnResetDataBlock.TabIndex = 14;
             BtnResetDataBlock.Text = "Reset Data Block";
             BtnResetDataBlock.UseVisualStyleBackColor = false;
             BtnResetDataBlock.Click += BtnResetDataBlock_Click;
             // 
-            // cardTimer
+            // CardTimer
             // 
-            cardTimer.Tick += cardTimer_Tick;
+            CardTimer.Tick += CardTimer_Tick;
             // 
             // label11
             // 
@@ -448,20 +433,40 @@
             TxtID.MaxLength = 255;
             TxtID.Name = "TxtID";
             TxtID.Size = new Size(258, 23);
-            TxtID.TabIndex = 27;
+            TxtID.TabIndex = 2;
+            // 
+            // DtBirth
+            // 
+            DtBirth.Format = DateTimePickerFormat.Custom;
+            DtBirth.Location = new Point(125, 246);
+            DtBirth.Name = "DtBirth";
+            DtBirth.Size = new Size(258, 23);
+            DtBirth.TabIndex = 3;
+            // 
+            // CbGender
+            // 
+            CbGender.DropDownStyle = ComboBoxStyle.DropDownList;
+            CbGender.FormattingEnabled = true;
+            CbGender.Items.AddRange(new object[] { "Male", "Female" });
+            CbGender.Location = new Point(125, 275);
+            CbGender.Name = "CbGender";
+            CbGender.Size = new Size(258, 23);
+            CbGender.TabIndex = 4;
             // 
             // ProfileCard
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1196, 483);
+            ClientSize = new Size(1196, 461);
+            Controls.Add(CbGender);
+            Controls.Add(DtBirth);
             Controls.Add(TxtID);
             Controls.Add(label11);
             Controls.Add(BtnResetDataBlock);
             Controls.Add(BtnReadProfile);
             Controls.Add(dReadAll);
-            Controls.Add(bClear);
-            Controls.Add(bReset);
+            Controls.Add(BtnClear);
+            Controls.Add(BtnResetReader);
             Controls.Add(mMsg);
             Controls.Add(BtnRead);
             Controls.Add(GBoxConnectReader);
@@ -470,8 +475,6 @@
             Controls.Add(BtnConfirm);
             Controls.Add(TxtNumber);
             Controls.Add(TxtAddress);
-            Controls.Add(TxtGender);
-            Controls.Add(TxtBirthDate);
             Controls.Add(TxtName);
             Controls.Add(label5);
             Controls.Add(label4);
@@ -479,6 +482,7 @@
             Controls.Add(label2);
             Controls.Add(ProfilePict);
             Controls.Add(label1);
+            Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "ProfileCard";
             Text = "ProfileCard";
             Load += ProfileCard_Load;
@@ -501,8 +505,6 @@
         private Label label4;
         private Label label5;
         private TextBox TxtName;
-        private TextBox TxtBirthDate;
-        private TextBox TxtGender;
         private TextBox TxtAddress;
         private TextBox TxtNumber;
         private Button BtnConfirm;
@@ -511,26 +513,28 @@
         private Button BtnRead;
         private GroupBox GBoxConnectReader;
         private ListBox mMsg;
-        private Button bConnect;
+        private Button BtnConnect;
         private ComboBox cbReader;
         private Label label7;
-        private Button btnGetUID;
-        private Button bReset;
-        private Button bClear;
+        private Button BtnGetUID;
+        private Button BtnResetReader;
+        private Button BtnClear;
         private DataGridView dReadAll;
         private Button BtnReadProfile;
         private Button BtnResetDataBlock;
-        private System.Windows.Forms.Timer cardTimer;
+        private System.Windows.Forms.Timer CardTimer;
         private Button BtnStopTimer;
         private Button BtnStartTimer;
         private GroupBox GBoxTapReader;
         private Label label8;
-        private Button bInit;
+        private Button BtnInitialize;
         private Button BtnStartThreading;
         private Button BtnStopThreading;
         private Label label10;
         private Label label9;
         private Label label11;
         private TextBox TxtID;
+        private DateTimePicker DtBirth;
+        private ComboBox CbGender;
     }
 }

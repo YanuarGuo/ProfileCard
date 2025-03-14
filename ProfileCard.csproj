@@ -14,7 +14,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="NBuilder" Version="6.1.0" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="assets\" />
   </ItemGroup>
 
 </Project>

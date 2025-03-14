@@ -7,6 +7,7 @@ using System.DirectoryServices.ActiveDirectory;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection.PortableExecutable;
@@ -16,17 +17,19 @@ using System.Text.RegularExpressions;
 using System.Timers;
 using System.Windows.Forms;
 using System.Xml.Linq;
+using FizzWare.NBuilder.Dates;
 using Npgsql;
 using NpgsqlTypes;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 using static ModWinsCard;
 
 namespace ProfileCard
 {
     public partial class ProfileCard : Form
     {
-        private NpgsqlConnection conn;
+        private NpgsqlConnection? conn;
         private Bitmap? originalImage;
         private string? loadedFilePath;
         public int retCode,
@@ -44,7 +47,6 @@ namespace ProfileCard
             Aprotocol,
             dwProtocol,
             cbPciLength;
-        public ModWinsCard.SCARD_READERSTATE RdrState;
         public ModWinsCard.SCARD_IO_REQUEST pioSendRequest;
         private static readonly int[] SECTOR_TRAILERS =
         {
@@ -104,7 +106,9 @@ namespace ProfileCard
             InitMenu();
             InitCard();
             // !! Uncomment a line below if you want to start card monitoring automatically !!
-            StartCardMonitoringAsync();
+            //StartCardMonitoringAsync();
+            DtBirth.Format = DateTimePickerFormat.Custom;
+            DtBirth.CustomFormat = "dd-MM-yyyy";
             System.Windows.Forms.Timer cardTimer;
             cardTimer = new System.Windows.Forms.Timer { Interval = 1000 };
             cardTimer.Tick += CheckCardStatus;
@@ -116,9 +120,9 @@ namespace ProfileCard
             cbReader.Items.Clear();
             cbReader.Text = "";
             mMsg.Items.Clear();
-            bConnect.Enabled = false;
-            bReset.Enabled = false;
-            btnGetUID.Enabled = false;
+            BtnConnect.Enabled = false;
+            BtnResetReader.Enabled = false;
+            BtnGetUID.Enabled = false;
         }
 
         private void ProfilePict_Click(object sender, EventArgs e)
@@ -145,8 +149,8 @@ namespace ProfileCard
         {
             TxtID.Text = "";
             TxtAddress.Text = "";
-            TxtBirthDate.Text = "";
-            TxtGender.Text = "";
+            DtBirth.Value = DateTime.Today;
+            CbGender.SelectedIndex = -1;
             TxtName.Text = "";
             TxtNumber.Text = "";
             ProfilePict.Image = null;
@@ -210,7 +214,7 @@ namespace ProfileCard
             }
         }
 
-        private void bConnect_Click(object sender, EventArgs e)
+        private void BtnConnect_Click(object sender, EventArgs e)
         {
             if (connActive)
             {
@@ -242,7 +246,7 @@ namespace ProfileCard
             connActive = true;
         }
 
-        private void bInit_Click(object sender, EventArgs e)
+        private void BtnInitialize_Click(object sender, EventArgs e)
         {
             string ReaderList = "" + Convert.ToChar(0);
             int indx;
@@ -328,7 +332,7 @@ namespace ProfileCard
             return;
         }
 
-        private void btnGetUID_Click(object sender, EventArgs e)
+        private void BtnGetUID_Click(object sender, EventArgs e)
         {
             ClearBuffers();
 
@@ -349,12 +353,12 @@ namespace ProfileCard
             }
         }
 
-        private void bClear_Click(object sender, EventArgs e)
+        private void BtnClear_Click(object sender, EventArgs e)
         {
             mMsg.Items.Clear();
         }
 
-        private void bReset_Click(object sender, EventArgs e)
+        private void BtnResetReader_Click(object sender, EventArgs e)
         {
             if (connActive)
             {
@@ -557,13 +561,13 @@ namespace ProfileCard
                 16,
                 16,
             };
-            int startSector = 2;
-            int startBlock = 8;
-            int blockIndex = 4;
+            int startSector = 1;
+            int startBlock = 4;
+            int blockIndex = 0;
 
             try
             {
-                for (int sector = 1; sector < startSector; sector++)
+                for (int sector = 0; sector < startSector; sector++)
                 {
                     blockIndex += sectorSizes[sector];
                 }
@@ -597,7 +601,7 @@ namespace ProfileCard
                             continue;
                         }
 
-                        byte[] blockData = ReadBlock(currentBlock);
+                        byte[]? blockData = ReadBlock(currentBlock);
                         if (blockData != null)
                         {
                             rawData.AddRange(blockData);
@@ -617,7 +621,7 @@ namespace ProfileCard
                     blockIndex += blocksInSector;
                 }
 
-                ParseProfileData(rawData.ToArray());
+                ParseProfileData([.. rawData], "Read");
             }
             catch (Exception ex)
             {
@@ -632,13 +636,13 @@ namespace ProfileCard
 
         private void BtnResetDataBlock_Click(object sender, EventArgs e)
         {
-            int startBlock = 8;
+            int startBlock = 4;
             byte[] emptyBlock = new byte[16];
 
             try
             {
                 int blockIndex = startBlock;
-                for (int sector = 2; sector < 40; sector++)
+                for (int sector = 1; sector < 40; sector++)
                 {
                     int blocksInSector = (sector < 32) ? 4 : 16;
                     int trailerBlock = blockIndex + blocksInSector - 1;
@@ -700,18 +704,18 @@ namespace ProfileCard
         {
             if (cbReader.SelectedItem != null)
             {
-                selectedReader = cbReader.SelectedItem?.ToString() ?? string.Empty;
-                cardTimer.Start();
-                BtnStartTimer.Enabled = false;
-                BtnStopTimer.Enabled = true;
-                BtnStartThreading.Enabled = false;
-                BtnStopThreading.Enabled = false;
                 MessageBox.Show(
-                    "Monitoring kartu dimulai!",
+                    "Timer monitoring kartu dimulai!",
                     "Info",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Information
                 );
+                selectedReader = cbReader.SelectedItem?.ToString() ?? string.Empty;
+                CardTimer.Start();
+                BtnStartTimer.Enabled = false;
+                BtnStopTimer.Enabled = true;
+                BtnStartThreading.Enabled = false;
+                BtnStopThreading.Enabled = false;
             }
             else
             {
@@ -726,13 +730,13 @@ namespace ProfileCard
 
         private void BtnStopTimer_Click(object sender, EventArgs e)
         {
-            cardTimer.Stop();
+            CardTimer.Stop();
             BtnStartTimer.Enabled = true;
             BtnStopTimer.Enabled = false;
             BtnStartThreading.Enabled = true;
             BtnStopThreading.Enabled = false;
             MessageBox.Show(
-                "Monitoring kartu dihentikan!",
+                "Timer monitoring kartu dihentikan!",
                 "Info",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
@@ -743,6 +747,13 @@ namespace ProfileCard
         {
             if (cts == null || cts.IsCancellationRequested)
             {
+                MessageBox.Show(
+                    "Thread monitoring kartu dimulai!",
+                    "Info",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
+
                 StartCardMonitoringAsync();
                 BtnStartThreading.Enabled = false;
                 BtnStopThreading.Enabled = true;
@@ -760,10 +771,17 @@ namespace ProfileCard
                 BtnStopThreading.Enabled = false;
                 BtnStartTimer.Enabled = true;
                 BtnStopTimer.Enabled = false;
+
+                MessageBox.Show(
+                    "Thread monitoring kartu dihentikan!",
+                    "Info",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
+                );
             }
         }
 
-        private void cardTimer_Tick(object sender, EventArgs e)
+        private void CardTimer_Tick(object sender, EventArgs e)
         {
             CheckCardStatus(sender, e);
         }
@@ -784,8 +802,8 @@ namespace ProfileCard
         {
             string id = TxtID.Text.Trim();
             string name = TxtName.Text.Trim();
-            string dob = TxtBirthDate.Text.Trim();
-            string gender = TxtGender.Text.Trim();
+            string dob = DtBirth.Value.ToString("yyyy-MM-dd");
+            string gender = CbGender.Text.Trim();
             string address = TxtAddress.Text.Trim();
             string phone = TxtNumber.Text.Trim();
 
@@ -841,10 +859,10 @@ namespace ProfileCard
 
         private void EnableButtons()
         {
-            bConnect.Enabled = true;
-            bReset.Enabled = true;
-            bClear.Enabled = true;
-            btnGetUID.Enabled = true;
+            BtnConnect.Enabled = true;
+            BtnResetReader.Enabled = true;
+            BtnClear.Enabled = true;
+            BtnGetUID.Enabled = true;
         }
 
         private void InitCard()
@@ -1011,23 +1029,6 @@ namespace ProfileCard
             return null;
         }
 
-        public static string ByteArrayToString(byte[] ba)
-        {
-            StringBuilder hex = new StringBuilder(ba.Length * 2);
-            foreach (byte b in ba)
-                hex.AppendFormat("{0:x2}", b);
-            return hex.ToString();
-        }
-
-        public static byte[] StringToByteArray(string hex)
-        {
-            return Enumerable
-                .Range(0, hex.Length)
-                .Where(x => x % 2 == 0)
-                .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                .ToArray();
-        }
-
         private void DisplayOutput(int errType, int retVal, string PrintText)
         {
             switch (errType)
@@ -1160,7 +1161,7 @@ namespace ProfileCard
 
         private void WriteBlock(List<byte[]> splitDataList)
         {
-            int block = 8;
+            int block = 4;
             int dataIndex = 0;
 
             foreach (byte[] splitData in splitDataList)
@@ -1245,6 +1246,7 @@ namespace ProfileCard
             return null;
         }
 
+        // !! Function below is used to name the image file with unique name !!
         static string GetUniqueFilePath(string filePath)
         {
             string directory = Path.GetDirectoryName(filePath) ?? string.Empty;
@@ -1263,154 +1265,295 @@ namespace ProfileCard
             return newFilePath;
         }
 
-        private void ParseProfileData(byte[] rawData)
+        private void ParseProfileData(byte[] rawData, string caller)
         {
-            try
+            if (caller == "Read")
             {
-                int imageStartIndex = FindSeparatorIndex(rawData);
-                if (imageStartIndex == rawData.Length)
-                {
-                    Debug.WriteLine("Error: No image separator (16 bytes of 0x00) found!");
-                    return;
-                }
-
-                byte[] textData = rawData.Take(imageStartIndex).ToArray();
-                string profileText = Encoding.UTF8.GetString(textData);
-
-                string[] parts = profileText.Split('*');
-                if (parts.Length > 0 && string.IsNullOrWhiteSpace(parts[0]))
-                {
-                    parts = [.. parts.Skip(1)];
-                }
-
-                bool isIdFound = false;
-
                 try
                 {
-                    if (conn == null || conn.State != ConnectionState.Open)
+                    int imageStartIndex = FindSeparatorIndex(rawData);
+                    byte[] textData = rawData.Take(imageStartIndex).ToArray();
+                    string profileText = Encoding.UTF8.GetString(textData);
+
+                    string[] parts = profileText.Split('*');
+                    if (parts.Length > 0 && string.IsNullOrWhiteSpace(parts[0]))
                     {
-                        MessageBox.Show(
-                            "Koneksi database belum dibuka!",
-                            "Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error
-                        );
-                        return;
+                        parts = [.. parts.Skip(1)];
                     }
 
-                    using NpgsqlCommand comm = new(
-                        "SELECT * FROM public.\"MsEmployees\" WHERE \"id\" = @id AND \"is_active\" = true",
-                        conn
-                    );
-                    if (!int.TryParse(parts[0], out int employeeId))
-                    {
-                        MessageBox.Show(
-                            "ID tidak valid!",
-                            "Error",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error
-                        );
-                        ProfilePict.Image = null;
-                        return;
-                    }
+                    bool isIdFound = false;
 
-                    comm.Parameters.AddWithValue("@id", parts[0]);
-
-                    using (NpgsqlDataReader reader = comm.ExecuteReader())
+                    try
                     {
-                        if (reader.Read())
+                        if (conn == null || conn.State != ConnectionState.Open)
                         {
-                            Debug.WriteLine("ID cocok, menampilkan data...");
-                            TxtID.Text = reader["id"].ToString();
-                            TxtName.Text = reader["name"].ToString();
-                            TxtBirthDate.Text = reader["birth_date"].ToString();
-                            TxtGender.Text = reader["gender"].ToString();
-                            TxtAddress.Text = reader["address"].ToString();
-                            TxtNumber.Text = reader["contact_number"].ToString();
-                            isIdFound = true;
-                        }
-                        else
-                        {
-                            TxtID.Text = "";
-                            TxtAddress.Text = "";
-                            TxtBirthDate.Text = "";
-                            TxtGender.Text = "";
-                            TxtName.Text = "";
-                            TxtNumber.Text = "";
-                            ProfilePict.Image = null;
                             MessageBox.Show(
-                                "ID tidak ditemukan dalam database!",
+                                "Koneksi database belum dibuka!",
                                 "Error",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Error
                             );
+                            return;
                         }
 
-                        reader.Close();
+                        using NpgsqlCommand comm = new(
+                            "SELECT * FROM public.\"MsEmployees\" WHERE \"id\" = @id AND \"is_active\" = true",
+                            conn
+                        );
+                        if (!int.TryParse(parts[0], out int employeeId))
+                        {
+                            MessageBox.Show(
+                                "ID tidak valid!",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error
+                            );
+                            ProfilePict.Image = null;
+                            return;
+                        }
+
+                        comm.Parameters.AddWithValue("@id", parts[0]);
+
+                        using (NpgsqlDataReader reader = comm.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                TxtID.Text = reader["id"].ToString();
+                                TxtName.Text = reader["name"].ToString();
+
+                                if (reader["birth_date"] != DBNull.Value)
+                                {
+                                    DtBirth.Value = (DateTime)reader["birth_date"];
+                                }
+                                else
+                                {
+                                    DtBirth.Value = DateTime.Today;
+                                }
+                                CbGender.Text = reader["gender"].ToString();
+                                TxtAddress.Text = reader["address"].ToString();
+                                TxtNumber.Text = reader["contact_number"].ToString();
+                                isIdFound = true;
+                            }
+                            else
+                            {
+                                TxtID.Text = "";
+                                TxtAddress.Text = "";
+                                DtBirth.Value = DateTime.Today;
+                                CbGender.SelectedIndex = -1;
+                                TxtName.Text = "";
+                                TxtNumber.Text = "";
+                                ProfilePict.Image = null;
+                                MessageBox.Show(
+                                    "ID tidak ditemukan dalam database!",
+                                    "Error",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error
+                                );
+                            }
+
+                            reader.Close();
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(
+                            $"Terjadi kesalahan: {ex.Message}",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
                     }
 
-                    Task.Run(() => RecordTap(parts[0]));
+                    if (isIdFound)
+                    {
+                        int realImageStartIndex = FindImageStartIndex(rawData, imageStartIndex);
+                        if (realImageStartIndex == -1)
+                        {
+                            return;
+                        }
+
+                        byte[] imageBytes = rawData.Skip(realImageStartIndex).ToArray();
+
+                        using MemoryStream ms = new(imageBytes);
+                        try
+                        {
+                            using System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
+                            ProfilePict.Image = (System.Drawing.Image)img.Clone();
+                            ProfilePict.SizeMode = PictureBoxSizeMode.StretchImage;
+                            UpdateLabelVisibility();
+
+                            // !! Uncomment lines below if you want to save image !!
+                            string userInputName = TxtName.Text;
+                            string basePath = $"D:\\{userInputName}.jpg";
+                            string outputPath = GetUniqueFilePath(basePath);
+                            ProfilePict.Image.Save(
+                                outputPath,
+                                System.Drawing.Imaging.ImageFormat.Jpeg
+                            );
+                            Debug.WriteLine($"Gambar berhasil disimpan di {outputPath}");
+                        }
+                        catch (Exception imgEx)
+                        {
+                            Debug.WriteLine($"Error saat membaca gambar: {imgEx.Message}");
+                        }
+                    }
+                    else
+                    {
+                        ProfilePict.Image = null;
+                    }
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show(
-                        $"Terjadi kesalahan: {ex.Message}",
+                        $"Kesalahan saat membaca profil: {ex.Message}",
                         "Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
                 }
-
-                if (isIdFound)
+            }
+            else if (caller == "Tap")
+            {
+                try
                 {
-                    int realImageStartIndex = FindImageStartIndex(rawData, imageStartIndex);
-                    if (realImageStartIndex == -1)
+                    int imageStartIndex = FindSeparatorIndex(rawData);
+                    byte[] textData = rawData.Take(imageStartIndex).ToArray();
+                    string profileText = Encoding.UTF8.GetString(textData);
+
+                    string[] parts = profileText.Split('*');
+                    if (parts.Length > 0 && string.IsNullOrWhiteSpace(parts[0]))
                     {
-                        Debug.WriteLine("Error: No image header (FF D8) found after separator!");
-                        return;
+                        parts = [.. parts.Skip(1)];
                     }
 
-                    byte[] imageBytes = rawData.Skip(realImageStartIndex).ToArray();
+                    bool isIdFound = false;
 
-                    using MemoryStream ms = new(imageBytes);
                     try
                     {
-                        using System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
-                        ProfilePict.Image = (System.Drawing.Image)img.Clone();
-                        ProfilePict.SizeMode = PictureBoxSizeMode.StretchImage;
-                        UpdateLabelVisibility();
+                        if (conn == null || conn.State != ConnectionState.Open)
+                        {
+                            MessageBox.Show(
+                                "Koneksi database belum dibuka!",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error
+                            );
+                            return;
+                        }
 
-                        // !! Uncomment lines below if you want to save image !!
-                        //string userInputName = TxtName.Text;
-                        //string basePath = $"D:\\{userInputName}.jpg";
-                        //string outputPath = GetUniqueFilePath(basePath);
-                        //ProfilePict.Image.Save(outputPath, System.Drawing.Imaging.ImageFormat.Jpeg);
-                        //Debug.WriteLine($"Gambar berhasil disimpan di {outputPath}");
+                        using NpgsqlCommand comm = new(
+                            "SELECT * FROM public.\"MsEmployees\" WHERE \"id\" = @id AND \"is_active\" = true",
+                            conn
+                        );
+                        if (!int.TryParse(parts[0], out int employeeId))
+                        {
+                            MessageBox.Show(
+                                "ID tidak valid!",
+                                "Error",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error
+                            );
+                            ProfilePict.Image = null;
+                            return;
+                        }
+
+                        comm.Parameters.AddWithValue("@id", parts[0]);
+
+                        using (NpgsqlDataReader reader = comm.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                Debug.WriteLine("ID cocok, menampilkan data...");
+                                TxtID.Text = reader["id"].ToString();
+                                TxtName.Text = reader["name"].ToString();
+
+                                if (reader["birth_date"] != DBNull.Value)
+                                {
+                                    DtBirth.Value = (DateTime)reader["birth_date"];
+                                }
+                                else
+                                {
+                                    DtBirth.Value = DateTime.Today;
+                                }
+                                CbGender.Text = reader["gender"].ToString();
+                                TxtAddress.Text = reader["address"].ToString();
+                                TxtNumber.Text = reader["contact_number"].ToString();
+                                isIdFound = true;
+                            }
+                            else
+                            {
+                                TxtID.Text = "";
+                                TxtAddress.Text = "";
+                                DtBirth.Value = DateTime.Today;
+                                CbGender.SelectedIndex = -1;
+                                TxtName.Text = "";
+                                TxtNumber.Text = "";
+                                ProfilePict.Image = null;
+                                MessageBox.Show(
+                                    "ID tidak ditemukan dalam database!",
+                                    "Error",
+                                    MessageBoxButtons.OK,
+                                    MessageBoxIcon.Error
+                                );
+                            }
+                            reader.Close();
+                        }
+
+                        Task.Run(() => RecordTap(parts[0]));
                     }
-                    catch (Exception imgEx)
+                    catch (Exception ex)
                     {
-                        Debug.WriteLine($"Error saat membaca gambar: {imgEx.Message}");
+                        MessageBox.Show(
+                            $"Terjadi kesalahan: {ex.Message}",
+                            "Error",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Error
+                        );
                     }
+
+                    if (isIdFound)
+                    {
+                        int realImageStartIndex = FindImageStartIndex(rawData, imageStartIndex);
+                        if (realImageStartIndex == -1)
+                        {
+                            return;
+                        }
+
+                        byte[] imageBytes = rawData.Skip(realImageStartIndex).ToArray();
+
+                        using MemoryStream ms = new(imageBytes);
+                        try
+                        {
+                            using System.Drawing.Image img = System.Drawing.Image.FromStream(ms);
+                            ProfilePict.Image = (System.Drawing.Image)img.Clone();
+                            ProfilePict.SizeMode = PictureBoxSizeMode.StretchImage;
+                            UpdateLabelVisibility();
+                        }
+                        catch (Exception imgEx)
+                        {
+                            Debug.WriteLine($"Error saat membaca gambar: {imgEx.Message}");
+                        }
+                        MessageBox.Show(
+                            "Absensi berhasil!",
+                            "Success",
+                            MessageBoxButtons.OK,
+                            MessageBoxIcon.Information
+                        );
+                    }
+                    else
+                    {
+                        ProfilePict.Image = null;
+                    }
+                }
+                catch (Exception ex)
+                {
                     MessageBox.Show(
-                        "Absensi berhasil!",
-                        "Success",
+                        $"Kesalahan saat membaca profil: {ex.Message}",
+                        "Error",
                         MessageBoxButtons.OK,
-                        MessageBoxIcon.Information
+                        MessageBoxIcon.Error
                     );
                 }
-                else
-                {
-                    ProfilePict.Image = null;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(
-                    $"Kesalahan saat membaca profil: {ex.Message}",
-                    "Error",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
-                );
             }
         }
 
@@ -1505,9 +1648,9 @@ namespace ProfileCard
                 16,
                 16,
             };
-            int startSector = 2;
-            int startBlock = 8;
-            int blockIndex = 4;
+            int startSector = 1;
+            int startBlock = 4;
+            int blockIndex = 0;
 
             if (connActive)
             {
@@ -1532,7 +1675,7 @@ namespace ProfileCard
 
             try
             {
-                for (int sector = 1; sector < startSector; sector++)
+                for (int sector = 0; sector < startSector; sector++)
                 {
                     blockIndex += sectorSizes[sector];
                 }
@@ -1580,7 +1723,7 @@ namespace ProfileCard
                     blockIndex += blocksInSector;
                 }
 
-                ParseProfileData(rawData.ToArray());
+                ParseProfileData([.. rawData], "Tap");
             }
             catch (Exception ex)
             {
@@ -1595,9 +1738,11 @@ namespace ProfileCard
 
         private void CheckCardStatus(object? sender, EventArgs e)
         {
-            ModWinsCard.SCARD_READERSTATE readerState = new ModWinsCard.SCARD_READERSTATE();
-            readerState.RdrName = selectedReader;
-            readerState.RdrCurrState = ModWinsCard.SCARD_STATE_EMPTY;
+            ModWinsCard.SCARD_READERSTATE readerState = new()
+            {
+                RdrName = selectedReader,
+                RdrCurrState = ModWinsCard.SCARD_STATE_EMPTY,
+            };
 
             retCode = ModWinsCard.SCardGetStatusChange(hContext, 0, ref readerState, 1);
             if (retCode != ModWinsCard.SCARD_S_SUCCESS)
@@ -1682,17 +1827,24 @@ namespace ProfileCard
             );
         }
 
-        private static void RecordTap(string employeeId)
+        private void RecordTap(string employeeId)
         {
             try
             {
-                using NpgsqlConnection newConn = new(
-                    "Server=localhost;Port=5432;User Id=postgres;Password=1sampai8;Database=postgres"
-                );
-                newConn.Open();
+                if (conn == null || conn.State != ConnectionState.Open)
+                {
+                    MessageBox.Show(
+                        "Koneksi database belum dibuka!",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                    return;
+                }
+
                 using NpgsqlCommand cmd = new(
                     "INSERT INTO public.\"EmployeeAttendance\" (id, employee_id, tapped_at) VALUES (gen_random_uuid(), @employee_id, NOW())",
-                    newConn
+                    conn
                 );
                 cmd.Parameters.AddWithValue("@employee_id", employeeId);
                 cmd.ExecuteNonQuery();
@@ -1716,7 +1868,6 @@ namespace ProfileCard
                     "Server=localhost;Port=5432;User Id=postgres;Password=1sampai8;Database=postgres"
                 );
                 conn.Open();
-                using NpgsqlCommand comm = new("SELECT * FROM public.\"MsEmployees\"", conn);
             }
             catch (Exception ex)
             {
