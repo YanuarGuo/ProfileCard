@@ -21,6 +21,7 @@ using FizzWare.NBuilder.Dates;
 using Npgsql;
 using NpgsqlTypes;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Windows.Forms.AxHost;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 using static ModWinsCard;
@@ -94,6 +95,7 @@ namespace ProfileCard
         private string selectedReader = string.Empty;
         private bool isCardPresent = false;
         private CancellationTokenSource? cts;
+        private bool isMonitoring = false;
 
         public ProfileCard()
         {
@@ -129,8 +131,7 @@ namespace ProfileCard
         {
             using OpenFileDialog ofd = new OpenFileDialog()
             {
-                Filter =
-                    "Image Files(*.jpg; *.jpeg; *.gif; *.bmp; *.png)|*.jpg; *.jpeg; *.gif; *.bmp; *.png",
+                Filter = "Image Files (*.jpg; *.jpeg)|*.jpg;*.jpeg",
             };
 
             if (ofd.ShowDialog() == DialogResult.OK)
@@ -802,10 +803,50 @@ namespace ProfileCard
         {
             string id = TxtID.Text.Trim();
             string name = TxtName.Text.Trim();
-            string dob = DtBirth.Value.ToString("yyyy-MM-dd");
+            DateTime dob = DtBirth.Value.Date;
             string gender = CbGender.Text.Trim();
             string address = TxtAddress.Text.Trim();
             string phone = TxtNumber.Text.Trim();
+
+            try
+            {
+                if (conn == null || conn.State != ConnectionState.Open)
+                {
+                    MessageBox.Show(
+                        "Koneksi database belum dibuka!",
+                        "Error",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Error
+                    );
+                    return string.Empty;
+                }
+
+                using NpgsqlCommand comm = new(
+                    "UPDATE public.\"MsEmployees\" "
+                        + "SET \"name\" = @name, \"birth_date\" = @dob, \"gender\" = @gender, "
+                        + "\"address\" = @address, \"contact_number\" = @phone "
+                        + "WHERE \"id\" = @id AND \"is_active\" = true",
+                    conn
+                );
+
+                comm.Parameters.AddWithValue("@id", id);
+                comm.Parameters.AddWithValue("@name", name);
+                comm.Parameters.AddWithValue("@dob", dob);
+                comm.Parameters.AddWithValue("@gender", gender);
+                comm.Parameters.AddWithValue("@address", address);
+                comm.Parameters.AddWithValue("@phone", phone);
+
+                int rowsAffected = comm.ExecuteNonQuery();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Terjadi kesalahan: {ex.Message}",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
 
             byte[]? compressedImage = null;
             if (ProfilePict.Image != null)
@@ -814,7 +855,7 @@ namespace ProfileCard
             }
             string hexID = ConvertStringToHexWithHeader("*", id);
             string hexName = ConvertStringToHexWithHeader("*", name);
-            string hexDOB = ConvertStringToHexWithHeader("*", dob);
+            string hexDOB = ConvertStringToHexWithHeader("*", dob.ToString("dd-MM-yyyy"));
             string hexGender = ConvertStringToHexWithHeader("*", gender);
             string hexAddress = ConvertStringToHexWithHeader("*", address);
             string hexPhone = ConvertStringToHexWithHeader("*", phone);
@@ -826,17 +867,11 @@ namespace ProfileCard
                 .Select(i => Convert.ToByte(hexTextData.Substring(i * 2, 2), 16))
                 .ToArray();
 
-            int remainder = textBytes.Length % 16;
-            int paddingSize = remainder == 0 ? 0 : 16 - remainder;
-
-            byte[] separator = new byte[16];
-            byte[] paddedTextBytes = textBytes
-                .Concat(new byte[paddingSize])
-                .Concat(separator)
-                .ToArray();
+            byte[] separator = new byte[4];
+            byte[] fixedTextBytes = textBytes.Concat(separator).ToArray();
 
             byte[] imageBytes = compressedImage ?? Array.Empty<byte>();
-            byte[] finalData = paddedTextBytes.Concat(imageBytes).ToArray();
+            byte[] finalData = fixedTextBytes.Concat(imageBytes).ToArray();
 
             return BitConverter.ToString(finalData).Replace("-", " ");
         }
@@ -1571,13 +1606,27 @@ namespace ProfileCard
 
         private static int FindSeparatorIndex(byte[] data)
         {
-            for (int i = 0; i <= data.Length - 16; i++)
+            int separatorSize = 4;
+            if (data.Length < separatorSize)
+                return data.Length;
+
+            for (int i = 0; i <= data.Length - separatorSize; i++)
             {
-                if (data.Skip(i).Take(16).All(b => b == 0x00))
+                bool isSeparator = true;
+
+                for (int j = 0; j < separatorSize; j++)
                 {
-                    return i;
+                    if (data[i + j] != 0x00)
+                    {
+                        isSeparator = false;
+                        break;
+                    }
                 }
+
+                if (isSeparator)
+                    return i;
             }
+
             return data.Length;
         }
 

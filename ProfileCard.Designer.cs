@@ -457,7 +457,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1196, 461);
+            ClientSize = new Size(1192, 464);
             Controls.Add(CbGender);
             Controls.Add(DtBirth);
             Controls.Add(TxtID);
