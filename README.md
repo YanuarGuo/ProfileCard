@@ -61,8 +61,7 @@ The tap reader supports two methods for detecting and reading smart cards:
 
 ✅ **Thread-Based Method**  
 - Runs in a separate thread to detect cards in real time.  
-- More efficient for performance-sensitive applications.  
-- Requires `BeginInvoke()` or `Invoke()` for UI updates.  
+- More efficient for performance-sensitive applications.   
 
 ## Author
 
