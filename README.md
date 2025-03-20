@@ -5,8 +5,7 @@ A **desktop application** built using **C# and .NET** that allows users to gener
 ## Features
 
 ✅ **Profile Card Maker**  
-- Generate **profile cards** with **name, designation, and profile picture**.  
-- Save generated cards as **JPEG** images.  
+- Generate **profile cards** with **personal informations and profile picture**.  
 - **User-friendly** interface.  
 - **Retrieve stored profiles** (byte-array or string and image).  
 
