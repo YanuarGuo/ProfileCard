@@ -60,9 +60,8 @@ The tap reader supports two methods for detecting and reading smart cards:
 - Requires `BeginInvoke()` or `Invoke()` for UI updates.  
 
 ## Author
-**Yanuar Christy Ade Utama**  
-📧 yanuarchristyadeutama@gmail.com
+Developed by **Yanuar Christy Ade Utama**.
 
-## Copyright & License
-© 2025 Yanuar Christy Ade Utama. All rights reserved. Unauthorized copying, modification, or distribution of this software is prohibited.
+## Contributions
+Feel free to submit **issues, feature requests, or pull requests** to improve this project!
 
